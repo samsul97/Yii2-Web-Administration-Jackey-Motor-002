@@ -1,0 +1,18 @@
+{
+    "name": "adyoi/yii2-webapps",
+    "description": "Yii2 Web Application",
+    "type": "application",
+    "keywords": ["yii2-webapps"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "adyoi",
+            "email": "adyoix@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "kartik-v/yii2-number": "dev-master"
+    }
+}
