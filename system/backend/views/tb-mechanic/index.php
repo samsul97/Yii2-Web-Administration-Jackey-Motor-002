@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel backend\models\TbMechanicSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Data Mechanic';
+$this->title = 'Daftar Mekanik';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">
@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-text">
             <div class="tb-invoice-index">
             <p>
-                <?= Html::a('Tambah Mechanic', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Tambah Mekanik', ['create'], ['class' => 'btn btn-success']) ?>
             </p>
                 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
                 <div class="table-responsive table-nowrap">
@@ -38,11 +38,9 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'headerOptions' => ['style' => 'text-align:center'],
                                 'contentOptions' => ['style' => 'text-align:center']
                             ],
-                            // 'id',
                             'name',
                             'telp',
                             'address',
-                            //'timestamp',
                             [
                                 'class' => 'yii\grid\ActionColumn',
                                 'header' => 'Action',

@@ -4,37 +4,33 @@ namespace backend\models;
 
 use Yii;
 use yii\helpers\ArrayHelper;
-use yii\helpers\BaseStringHelper;
 
 /**
- * This is the model class for table "tb_estimation".
+ * This is the model class for table "tb_work_order".
  *
  * @property int $id
+ * @property int $id_customer
  * @property int $id_mechanic
- * @property string $name_cust
- * @property string $address_cust
- * @property string $phone_cust
- * @property string $number_plate
- * @property string $no_invoice
- * @property string $model
+ * @property string $no_estimation
  * @property string $broughtin
- * @property string $merk
- * @property string $chasis
  * @property string $received
+ * @property string $regdate
  * @property string $datein
  * @property string $dateout
- * @property string $engine
+ * @property string $km
+ * @property int $is_invoice
  * @property string $timestamp
  */
-class TbEstimation extends \yii\db\ActiveRecord
+class TbWorkOrder extends \yii\db\ActiveRecord
 {
-    const FROM_ESTIMATION = 1;
+    const IS_WORK_ORDER = 1;
+    const IS_NOT_WORK_ORDER = 0;
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tb_estimation';
+        return 'tb_work_order';
     }
 
     /**
@@ -43,10 +39,10 @@ class TbEstimation extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['no_estimation', 'broughtin', 'received', 'datein', 'dateout'], 'required'],
+            [['no_work_order', 'id_customer', 'id_mechanic', 'broughtin', 'received', 'datein', 'dateout'], 'required'],
+            [['id_customer', 'id_mechanic', 'id_estimation', 'generate_status'], 'integer'],
             [['datein', 'dateout', 'timestamp'], 'safe'],
-            [['id_mechanic', 'id_customer', 'is_invoice', 'is_work_order'], 'integer'],
-            [['no_estimation', 'broughtin', 'received'], 'string', 'max' => 255],
+            [['no_work_order', 'broughtin', 'received'], 'string', 'max' => 255],
         ];
     }
 
@@ -57,25 +53,16 @@ class TbEstimation extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
+            'no_work_order' => 'No Working Order',
             'id_customer' => 'Pelanggan',
             'id_mechanic' => 'Mekanik',
-            'no_estimation' => 'Nomor Estimasi',
-            'broughtin' => 'Brought in',
+            'broughtin' => 'Broughtin',
             'received' => 'Received',
-            'datein' => 'Date in',
-            'dateout' => 'Date out',
-            'timestamp' => 'Tgl Estimasi',
+            'datein' => 'Datein',
+            'dateout' => 'Dateout',
+            'generate_status' => 'Dicetak dari',
+            'timestamp' => 'Updated at',
         ];
-    }
-    
-    public function getServiceItems()
-    {
-        return $this->hasMany(TbEstimationService::className(), ['id_tb_estimation' => 'id']);
-    }
-
-    public function getCount()
-    {
-        return  static::find()->count();
     }
 
     public function getCustomer()
@@ -83,9 +70,9 @@ class TbEstimation extends \yii\db\ActiveRecord
         return $this->hasOne(TbCustomer::className(), ['id' => 'id_customer']);
     }
 
-    public function getWorkOrder()
+    public function getMechanic()
     {
-        return $this->hasOne(TbWorkOrder::className(), ['id_estimation' => 'id']);
+        return $this->hasOne(TbMechanic::className(), ['id' => 'id_mechanic']);
     }
 
     public function customerName()
@@ -108,16 +95,30 @@ class TbEstimation extends \yii\db\ActiveRecord
         return $selectMechanic;
     }
 
-    public function generateEstimationNumber($customerId)
+    public function getServiceItems()
+    {
+        return $this->hasMany(TbWorkOrderService::className(), ['id_tb_work_order' => 'id']);
+    }
+    public function getInvoice()
+    {
+        return $this->hasOne(TbInvoice::className(), ['id_work_order' => 'id']);
+    }
+
+    public function getEstimation()
+    {
+        return $this->hasOne(TbEstimation::className(), ['id' => 'id_estimation']);
+    }
+    
+    public function generateWorkOrderNumber($customerId)
     {
         $code_digit  = 3;
         $code_tgl    = date('Ymd');
         $cek         = TbCustomer::find()->where(['id' => $customerId])->one();
         $code_prefix = $cek->plate;
-        $code_model  = TbEstimation::find()->max('id');
+        $code_model  = TbWorkOrder::find()->max('id');
         $code_seq    = str_pad($code_model + 1 , $code_digit, '0', STR_PAD_LEFT);
         
-        $code_format = 'EST-' . $code_tgl. '-' .$code_prefix. '-' . $code_seq;
+        $code_format = 'WO-'. $code_tgl. '-' .$code_prefix. '-' . $code_seq;
 
         return $code_format;
     }

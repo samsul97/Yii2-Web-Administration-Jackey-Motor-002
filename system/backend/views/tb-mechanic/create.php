@@ -5,8 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbMechanic */
 
-$this->title = 'Tambah Mechanic';
-$this->params['breadcrumbs'][] = ['label' => 'Data Mechanic', 'url' => ['index']];
+$this->title = 'Tambah Mekanik';
+$this->params['breadcrumbs'][] = ['label' => 'Mekanik', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 

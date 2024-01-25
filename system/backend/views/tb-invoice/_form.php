@@ -1,6 +1,5 @@
 <?php
 
-use backend\models\TbCustomer;
 use backend\models\TbMechanic;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
@@ -24,15 +23,15 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
 
 <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
 
-<div class="row">
+<div class="col-lg-12">
     <?= Select2::widget([
         'id' => 'customer',
         'name' => 'customer',
-        'data' => $model->customerName(),
-        'value' => $model->customer ? $model->customer : null,
+        'data' => $model->customerName() ?: [],
+        'value' => $model->id_customer ? $model->id_customer : null,
         'options' => [
-            'placeholder' => 'Pilih Customer',
-            'onChange' => '$.post("'.Url::base().'/tb-invoice/customer-data?id='.'" + $(this).val(), function(data) {
+            'placeholder' => 'Pilih Pelanggan',
+            'onChange' => '$.post("'.Url::base().'/tb-estimation/customer-data?id='.'" + $(this).val(), function(data) {
                 if (data) {
                     item = JSON.parse(data);
                     console.log(item);
@@ -41,6 +40,8 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
                     $("#merk").val(item.merk);
                     $("#chasis").val(item.chasis);
                     $("#engine").val(item.engine);
+                    $("#km").val(item.km);
+                    $("#regdate").val(item.regdate);
                 } else {
                     // Handle error or set default values
                     $("#plate").val("");
@@ -48,6 +49,8 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
                     $("#merk").val("");
                     $("#chasis").val("");
                     $("#engine").val("");
+                    $("#km").val("");
+                    $("#regdate").val("");
                 }
                 }
             );',
@@ -65,35 +68,44 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
     <div class="col-lg-4">
 
         <?= Html::label('Plat Nomor', 'plate', ['class' => 'control-label']) ?>
-        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['plate'] : $customerModel['plate'] ?>" name="plate" id="plate" readonly="true">
+        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['plate'] : null ?>" name="plate" id="plate" readonly="true">
 
-        <?= Html::label('Model', 'plate', ['class' => 'control-label']) ?>
-        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['model'] : $customerModel['model'] ?>" name="model" id="model" readonly="true">
-
-        <?= Html::label('Merk', 'plate', ['class' => 'control-label']) ?>
-        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['merk'] : $customerModel['merk'] ?>" name="merk" id="merk" readonly="true">
-
-        <?= Html::label('Chasis', 'plate', ['class' => 'control-label']) ?>
-        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['chasis'] : $customerModel['chasis'] ?>" name="chasis" id="chasis" readonly="true">
-
-        <?= Html::label('Engine', 'plate', ['class' => 'control-label']) ?>
-        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['engine'] : $customerModel['engine'] ?>" name="engine" id="engine" readonly="true">
+        <?= Html::label('Model', 'model', ['class' => 'control-label']) ?>
+        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['model'] : null ?>" name="model" id="model" readonly="true">
     
     </div>
 
     <div class="col-lg-4">
+        <?= Html::label('Chasis', 'chasis', ['class' => 'control-label']) ?>
+        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['chasis'] : null ?>" name="chasis" id="chasis" readonly="true">
 
-        <?= $form->field($model, 'km')->textInput(['maxlength' => true, 'placeholder' => 'Km'])?>
-        
-        <?= $form->field($model, 'received')->textInput(['maxlength' => true ]) ?>
-        
-        <?= $form->field($model, 'broughtin')->textInput(['maxlength' => true ]) ?>
+        <div class="row">
+            <div class="col-md-6">
+                <?= Html::label('Engine', 'engine', ['class' => 'control-label']) ?>
+                <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['engine'] : null ?>" name="engine" id="engine" readonly="true">
+            </div>
+            <div class="col-md-6">
+                <?= Html::label('KM', 'km', ['class' => 'control-label']) ?>
+                <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['km'] : null ?>" name="km" id="km" readonly="true">
+            </div>
+        </div>
     </div>
     
+    <div class="col-lg-4">
+        <?= Html::label('Merk', 'merk', ['class' => 'control-label']) ?>
+        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['merk'] : null ?>" name="merk" id="merk" readonly="true">
+        
+        <?= Html::label('Regdate', 'regdate', ['class' => 'control-label']) ?>
+        <input type="text" class="form-control" value="<?= $model->customer ? $model->customer['regdate'] : null ?>" name="regdate" id="regdate" readonly="true">
+    </div>
+
+</div>
+
+<div class="row">
     <div class="col-lg-4">
         <?= $form->field($model, 'datein')->widget(DatePicker::classname(), [
             'options' => [
-                'placeholder'  => 'Pilih Tahun Pembuatan',
+                'placeholder'  => 'Tanggal Masuk',
                 'autocomplete' => 'off',
                 'value' => $model->datein ? $model->datein : NULL,
             ],
@@ -106,7 +118,7 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
 
         <?= $form->field($model, 'dateout')->widget(DatePicker::classname(), [
             'options' => [
-                'placeholder'  => 'Pilih Tahun Pembuatan',
+                'placeholder'  => 'Tanggal Keluar',
                 'autocomplete' => 'off',
                 'value' => $model->dateout ? $model->dateout : NULL,
             ],
@@ -116,13 +128,17 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
                 'format'         => 'yyyy-mm-dd'
             ]
         ]) ?>
-
-        <?= $form->field($model, 'regdate')->textInput(['maxlength' => true, 'placeholder' => 'Regdate']) ?>
+    </div>
+    <div class="col-lg-4">
+        <?= $form->field($model, 'received')->textInput(['maxlength' => true, 'placeholder' => 'Received']) ?>
         
+        <?= $form->field($model, 'broughtin')->textInput(['maxlength' => true, 'placeholder' => 'Broughtin']) ?>
+    </div>
+    <div class="col-lg-4">
         <?= $form->field($model, 'id_mechanic')->widget(Select2::classname(),[
-                'data' => $model->getMechanic(),
+                'data' => $model->getMechanicName(),
                 'options' => [
-                    'placeholder' => 'Pilih Mechanic',
+                    'placeholder' => 'Pilih Mekanik',
                     'value' => $model->isNewRecord ? $model->id_mechanic : $model->id_mechanic,
                 ],
                 'pluginOptions' => [
@@ -131,7 +147,6 @@ $select_mechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', 
             ]);
         ?>
     </div>
-
 </div>
 
 <hr style="border-top: 2px double #e67e22">

@@ -8,8 +8,9 @@ use yii\grid\GridView;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbInvoice */
 
-$this->title = 'Invoice Milik : ' . $model->customer->name . ' Dengan Nomor Invoice ' . $model->no_invoice;
-$this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
+$this->title = 'Work Order Milik : ' .  $workOrder->customer->name;
+$this->params['breadcrumbs'][] = ['label' => 'Work Order Dari Estimasi', 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
 
@@ -28,61 +29,40 @@ $this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
     </div>
     <div class="card-body">
         <div class="card-text">
-            <div class="tb-invoice-view">
+            <div class="work-order-view">
                 <p>
-                    <?php if ($model->is_out == TbInvoice::IS_NOT_OUT) : { ?>
-                        <?= Html::a('Edit Invoice', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
-                        <?= Html::a('Delete Invoice', ['delete', 'id' => $model->id], [
-                            'class' => 'btn btn-danger',
+                    <?= Html::a('<i class="fa fa-print"></i> Cetak Work Order', [
+                        'tb-work-order/print-working-order', 
+                        'id' => $workOrder->id], 
+                        ['class' => 'btn btn-warning'])
+                    ?>
+                    <?= Html::a(
+                        ($model->is_invoice == TbInvoice::IS_INVOICE && $model->workOrder->invoice->is_out == TbInvoice::IS_OUT)
+                            ? '<button class="btn btn btn-success disabled"><i class="fa fa-arrow-right"></i> Invoice Has Been Paid </button>'
+                            : '<button class="btn btn btn-info"><i class="fa fa-arrow-right"></i> Buat Invoice </button>',
+                        ($model->is_invoice == TbInvoice::IS_INVOICE && $model->workOrder->invoice->is_out == TbInvoice::IS_OUT)
+                            ? 'javascript:void(0);'
+                            : ['tb-work-order/generate-invoice', 'id' => $model->workOrder->id],
+                        [
+                            'title' => ($model->is_invoice == TbInvoice::IS_INVOICE && $model->workOrder->invoice->is_out == TbInvoice::IS_OUT)
+                                ? 'Invoice Has Been Paid'
+                                : 'Generate Invoice',
                             'data' => [
-                                'confirm' => 'Are you sure you want to delete this item?',
+                                'confirm' => ($model->is_invoice == TbInvoice::IS_INVOICE && $model->workOrder->invoice->is_out == TbInvoice::IS_OUT)
+                                    ? ''
+                                    : 'Apakah Anda ingin membuat Invoice dari Work Order ini?',
                                 'method' => 'post',
+                                'pjax' => 1,
                             ],
-                        ]) ?>
-                    <?php } endif  ?>
-
-                    <?= Html::a('<i class="fa fa-print"></i> Cetak Invoice', ['print-invoice', 'id' => $model->id], ['class' => 'btn btn-warning']) ?>
-                    <?= Html::a('<i class="fa fa-wrench"></i> Cetak Working Order', ['tb-work-order/print-working-order', 'id' => $model->workOrder->id], ['class' => 'btn btn-danger']) ?>
-                    
-                    <?php if ($model->generate_status == TbInvoice::FROM_WORK_ORDER_AND_ESTIMATION && $model->workOrder->estimation) : { ?>
-                        <?= Html::a('<i class="fa fa-money-check"></i> Cetak Estimasi', ['tb-estimation/print-estimation', 'id' => $model->workOrder->estimation->id], ['class' => 'btn btn-info']) ?>
-                    <?php } endif ?>
+                        ]
+                    );
+                    ?>
                 </p>
 
                 <?= DetailView::widget([
-                    'model' => $model,
+                    'model' => $workOrder,
                     'template' => '<tr><th width="180px" style="text-align:right">{label}</th><td>{value}</td></tr>',
                     'attributes' => [
-                        [
-                            'format' => 'raw',
-                            'attribute' => 'is_out',
-                            'value' => function ($model) {
-                                if ($model->is_out == TbInvoice::IS_NOT_OUT) {
-                                    return Html::a('<button class ="btn btn-'. ($model->is_out == 0 ? 'danger' : 'secondary') .'"> '. ($model->is_out == 0 ? '' : 'Sudah di ') .'Unpaid </button>', ['tb-invoice/edit-status', 'id' => $model->id, 'is_out' => ($model->is_out == 0 ? 1 : 1)], ['data' => ['confirm' => ($model->is_out == 0 ? 'Apa Anda yakin Invoice ini sudah terbayar?' : false)],]);
-                                } else {
-                                    return '<button class="btn btn-success disable">'. "Paid" .'</button>';
-                                }
-                            },
-                            'filter'=>[
-                                0 => 'Unpaid',
-                                1 => 'Paid',
-                            ],
-                        ],
-                        [
-                            'format' => 'raw',
-                            'attribute' => 'generate_status',
-                            'value' => function ($model) {
-                                if ($model->generate_status == TbInvoice::FROM_WORK_ORDER) {
-                                    return '<button class="btn btn-danger disable">'. 'Work Order' .'</button>';
-                                } else {
-                                    return '<button class="btn btn-warning disable">'. 'WO & Estimation' .'</button>';
-                                }
-                            },
-                                'filter'=>[
-                                    0 => 'Work Order',
-                                    1 => 'Wo & Estimation',
-                                ],
-                        ],
                         [
                             'label' => 'Name',
                             'format' => 'raw',
@@ -164,11 +144,16 @@ $this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
 
                 <?= GridView::widget([
                     'dataProvider'=>new yii\data\ActiveDataProvider([
-                        'query'=> $model->getServiceItems(),
+                        'query'=> $workOrder->getServiceItems(),
                         'pagination'=>false,
                     ]),
-                    'showFooter' => true,
                     'columns'=>[
+                        [
+                            'class' => 'yii\grid\SerialColumn',
+                            'header' => 'No',
+                            'headerOptions' => ['style' => 'text-align:center'],
+                            'contentOptions' => ['style' => 'text-align:center']
+                        ],
                         [
                             'attribute' => 'name',
                             'label' => 'Service And Supplies',
@@ -181,21 +166,6 @@ $this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
                                 }
                             },
                             'contentOptions' => ['class' => 'text-left'],
-                        ],
-                        'qty',
-                        [
-                            'attribute' => 'price',
-                            'label' => 'Harga',
-                            'value' => function($model) {
-                                return number_format($model->price, 2);
-                            }
-                        ],
-                        [
-                            'attribute' => 'amount',
-                            'value' => function($model) {
-                                return number_format($model->amount, 2);
-                            },
-                            'footer' => '<b> Rp.' . number_format($serviceAmount, 2) . '</b>',       
                         ],
                     ]
                 ]) ?>

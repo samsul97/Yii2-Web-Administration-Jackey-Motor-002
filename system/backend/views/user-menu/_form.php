@@ -63,9 +63,9 @@ foreach ($controllerlist as $controller)
                 {
                     $controller_fix = preg_replace('/Controller.php/', '', $controller);
                     $controller_divide = preg_split('/(?=[A-Z])/', $controller_fix, -1, PREG_SPLIT_NO_EMPTY);
-                    $controller_lowletter = strtolower(implode($controller_divide, '-'));
+                    $controller_lowletter = strtolower(implode('-', $controller_divide));
                     $action_divide = preg_split('/(?=[A-Z])/', trim($action[1]), -1, PREG_SPLIT_NO_EMPTY);
-                    $action_lowletter = strtolower(implode($action_divide, '-'));
+                    $action_lowletter = strtolower(implode('-', $action_divide));
                     $fulllist[] = ['key' => $controller_lowletter, 'val' => $action_divide];
                     $fulllist2[$controller_lowletter][] = $action_divide;
                 }

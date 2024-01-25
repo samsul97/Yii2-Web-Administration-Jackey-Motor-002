@@ -4,7 +4,6 @@ namespace backend\models;
 
 use Yii;
 use yii\helpers\ArrayHelper;
-use yii\helpers\BaseStringHelper;
 
 /**
  * This is the model class for table "tb_invoice".
@@ -28,6 +27,15 @@ use yii\helpers\BaseStringHelper;
  */
 class TbInvoice extends \yii\db\ActiveRecord
 {
+    const IS_OUT = 1;
+    const IS_NOT_OUT = 0;
+    
+    const IS_INVOICE = 1;
+    const IS_NOT_INVOICE = 0;
+
+    const FROM_WORK_ORDER = 0;
+    const FROM_WORK_ORDER_AND_ESTIMATION = 1;
+
     /**
      * {@inheritdoc}
      */
@@ -42,10 +50,10 @@ class TbInvoice extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['no_invoice', 'broughtin', 'received', 'regdate', 'datein', 'dateout', 'km'], 'required'],
+            [['no_invoice', 'broughtin', 'received', 'datein', 'dateout'], 'required'],
             [['datein', 'dateout', 'timestamp'], 'safe'],
-            [['km', 'id_mechanic', 'id_customer', 'id_estimation', 'is_invoice', 'is_out'], 'integer'],
-            [['no_invoice', 'broughtin', 'received', 'regdate', 'km'], 'string', 'max' => 255],
+            [['id_mechanic', 'id_customer', 'id_work_order', 'is_out', 'generate_status'], 'integer'],
+            [['no_invoice', 'broughtin', 'received'], 'string', 'max' => 255],
         ];
     }
 
@@ -61,27 +69,24 @@ class TbInvoice extends \yii\db\ActiveRecord
             'no_invoice' => 'Nomor Invoice',
             'broughtin' => 'Brought in',
             'received' => 'Received',
-            'regdate' => 'Regdate',
             'datein' => 'Date in',
             'dateout' => 'Date out',
-            'km' => 'Km',
-            'is_invoice' => 'Cetak dari',
+            'generate_status' => 'Cetak dari',
             'is_out' => 'Status',
             'timestamp' => 'Tgl Invoice',
         ];
     }
-    public function getOrderItems()
+
+    public function getServiceItems()
     {
-        if ($this->is_invoice == 1) { // from estimation
-            return $this->hasMany(TbService::className(), ['id_tb_estimation' => 'id']);
-        } else {
-            return $this->hasMany(TbService::className(), ['id_tb_invoice' => 'id']);
-        }
+        return $this->hasMany(TbInvoiceService::className(), ['id_tb_invoice' => 'id']);
     }
+    
     public static function getCount()
     {
         return static::find()->count();
     }
+
     public function getCustomer()
     {
         return $this->hasOne(TbCustomer::className(), ['id' => 'id_customer']);
@@ -95,16 +100,6 @@ class TbInvoice extends \yii\db\ActiveRecord
                             });
 
         return $selectCustomer;
-    }
-
-    public function getMechanic()
-    {
-        $selectMechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', function($model, $defaultValue) {
-            return $model['name'];
-        }
-        );
-
-        return $selectMechanic;
     }
 
     public function generateInvoiceNumber($customerId)
@@ -121,8 +116,23 @@ class TbInvoice extends \yii\db\ActiveRecord
         return $code_format;
     }
 
-    public function getEstimation()
+    public function getMechanicName()
     {
-        return $this->hasOne(TbEstimation::className(), ['id' => 'id_estimation']);
+        $selectMechanic = ArrayHelper::map(TbMechanic::find()->asArray()->all(), 'id', function($model, $defaultValue) {
+            return $model['name'];
+        }
+        );
+
+        return $selectMechanic;
+    }
+    
+    public function getWorkOrder()
+    {
+        return $this->hasOne(TbWorkOrder::className(), ['id' => 'id_work_order']);
+    }
+
+    public function getMechanic()
+    {
+        return $this->hasOne(TbMechanic::className(), ['id' => 'id_mechanic']);
     }
 }

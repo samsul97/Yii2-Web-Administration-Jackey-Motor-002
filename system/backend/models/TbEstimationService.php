@@ -13,14 +13,14 @@ use Yii;
  * @property float|null $price
  * @property float|null $amount
  */
-class TbServiceEstimation extends \yii\db\ActiveRecord
+class TbEstimationService extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tb_service_estimation';
+        return 'tb_estimation_service';
     }
 
     /**
@@ -53,7 +53,7 @@ class TbServiceEstimation extends \yii\db\ActiveRecord
 
     public static function getCountOmset()
     {
-        $omset = TbServiceEstimation::find()->sum('amount');
+        $omset = TbEstimationService::find()->sum('amount');
         return $omset;
     }
 }

@@ -1,17 +1,18 @@
 <?php
 
 use backend\models\TbCustomer;
+use backend\models\TbMechanic;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model backend\models\TbInvoiceSearch */
+/* @var $model backend\models\TbWorkOrderSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="tb-invoice-search">
+<div class="tb-work-order-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
@@ -19,7 +20,7 @@ use yii\widgets\ActiveForm;
     ]); ?>
 
     <div class="row">
-        <div class="col-lg-6">
+        <div class="col-md-4">
             <?= $form->field($model, 'id_customer')->widget(Select2::classname(),[
                     'data' => ArrayHelper::map(TbCustomer::find()->joinWith('tbWorkOrder')->all(), 'id', 'plate'),
                     'options' => [
@@ -31,14 +32,26 @@ use yii\widgets\ActiveForm;
                 ]);
             ?>
         </div>
-        <div class="col-lg-6">
-            <?= $form->field($model, 'no_invoice')->textInput(['placeholder' => 'Cari Berdasarkan No Order Invoice']) ?>
+        <div class="col-md-4">
+            <?= $form->field($model, 'id_mechanic')->widget(Select2::classname(),[
+                    'data' => ArrayHelper::map(TbMechanic::find()->all(), 'id', 'name'),
+                    'options' => [
+                        'placeholder' => 'Cari Berdasarkan Mekanik',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => false
+                    ],
+                ]);
+            ?>
+        </div>
+        <div class="col-lg-4">
+            <?= $form->field($model, 'no_work_order')->textInput(['placeholder' => 'Cari Berdasarkan No Working Order']) ?>
         </div>
     </div>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
-        <?= Html::a('Reset', ['index'], ['class' => 'btn btn-default']) ?>
+        <?= Html::a('Reset', ['index'], ['class' => 'btn btn-outline-secondary']) ?>
     </div>
 
     <?php ActiveForm::end(); ?>

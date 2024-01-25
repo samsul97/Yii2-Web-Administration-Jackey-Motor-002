@@ -31,8 +31,9 @@ class TbCustomer extends \yii\db\ActiveRecord
         return [
             [['name', 'phone', 'address', 'chasis', 'plate', 'engine', 'model', 'merk'], 'required'],
             [['address'], 'string'],
-            [['timestamp'], 'safe'],
-            [['name', 'phone', 'chasis', 'plate', 'engine', 'model', 'merk'], 'string', 'max' => 255],
+            [['regdate', 'timestamp'], 'safe'],
+            [['plate'], 'unique'],
+            [['name', 'phone', 'chasis', 'plate', 'engine', 'model', 'merk', 'km'], 'string', 'max' => 255],
         ];
     }
 
@@ -44,13 +45,15 @@ class TbCustomer extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Nama Pelanggan',
-            'phone' => 'No Telp Sesuai STNK',
+            'phone' => 'No Telp',
             'address' => 'Alamat Lengkap',
             'chasis' => 'Chasis',
             'plate' => 'Plat Nomor',
             'engine' => 'Nomor Mesin',
             'model' => 'Model',
             'merk' => 'Merk',
+            'regdate' => 'Regdate',
+            'km' => 'Km',
             'timestamp' => 'Tanggal Daftar',
         ];
     }
@@ -62,5 +65,10 @@ class TbCustomer extends \yii\db\ActiveRecord
     public function getEstimation()
     {
         return $this->hasMany(TbEstimation::class, ['id_customer' => 'id']);
+    }
+
+    public function getTbWorkOrder()
+    {
+        return $this->hasMany(TbWorkOrder::class, ['id_customer' => 'id']);
     }
 }

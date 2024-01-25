@@ -1,3 +1,6 @@
+<?php
+use yii\helpers\Url;
+?>
 <div class="row">
     <div class="col-md-12">
         <div class="card card-body">
@@ -5,8 +8,8 @@
                 <div class="col-md-12">
                     <div class="pull-left d-flex justify-content-center align-items-center text-center" style="padding: 5">
                         <div>
-                            <img src="C://xampp/htdocs/JackeyMotor/backend/dist/img/jackeyfix.png" width="100px"><p><!-- <br> -->
-                            <img src="C://xampp/htdocs/JackeyMotor/backend/dist/img/jackeytext.png" width="150px" style="padding-top: 2px;">
+                            <img src="<?= Url::base(). '/dist/img/jackeyfix.png'; ?>" width="100px"><p>
+                            <img src="<?= Url::base(). '/dist/img/jackeytext.png'; ?>" width="150px" style="padding-top: 2px;">
                             </p>
                             <p style="font-weight: bold; font-size:14px; line-height: 5px; padding-top: 0rem;"><b>Jl. Raya Jombang No.21, Sektor 9, Bintaro, Tangerang Selatan</b></p>
                             <p style="font-weight: bold; font-size:14px; line-height: 10px;"><b>Phone: (021) 7486 3338 - 7045 0606</b></p>
@@ -15,9 +18,9 @@
                     <div class="pull-left text-left">
                         <div style="line-height: inherit;">
                             <p style="font-size:14px; line-height:10px"><b>Kepada Yth,</b></p>
-                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer['name']?></p>
-                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer['address']?></p>
-                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer['phone']?></p>
+                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer ? $model->customer->name : null ?></p>
+                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer ? $model->customer->address : null ?></p>
+                            <p style="font-weight: bold; font-size:14px; line-height: 10px;"><?= $model->customer ? $model->customer->phone : null ?></p>
                         </div>
                     </div>
                 </div>
@@ -26,22 +29,22 @@
                     <div class="table-responsive m-t-40" style="clear: both;">
                         <table class="table1">
                             <tr>
-                                <th>Invoice ID:<br><?=$model['no_estimation']?></br></th>
-                                <th>Date in: <?=$model['datein']?></th>                         
-                                <th>Model: <?=$model->customer['model']?></th>
-                                <th class="text-center"><h3><strong>ESTIMATE</strong></h3></th>
+                                <th>Estimation ID : <?= $model->no_estimation ?></br></th>
+                                <th>Date In: <?= $model->datein ?></th>                         
+                                <th>Model: <?= $model->customer? $model->customer->model : null ?></th>
+                                <th class="text-center"><h3><strong>ESTIMASI</strong></h3></th>
                             </tr>
                             <tr>
-                                <th>Car ID: <?=$model->customer['plate']?></th>
-                                <th>Date Out: <?=$model['dateout']?></th>
-                                <th>Chasis: <?=$model->customer['chasis']?></th>
-                                <th>KM:<?=$model['km']?></th>
+                                <th>Car ID: <?= $model->customer? $model->customer->plate : null ?></th>
+                                <th>Date Out: <?= $model->dateout ?></th>
+                                <th>Chasis: <?= $model->customer ? $model->customer->chasis : null ?></th>
+                                <th>KM:<?= $model->customer ? $model->customer->km : null ?></th>
                             </tr>
                             <tr>
-                                <th>Brought in: <?=$model['broughtin']?></th>
-                                <th>Received: <?=$model['received']?></th>
-                                <th>Engine: <?=$model->customer['engine']?></th>
-                                <th>Reg Date: <?=$model['regdate']?></th>
+                                <th>Brought in: <?= $model->broughtin ?></th>
+                                <th>Received: <?= $model->received ?></th>
+                                <th>Engine: <?= $model->customer ? $model->customer->engine : null ?></th>
+                                <th>Reg Date: <?= $model->customer ? $model->customer->regdate : null ?></th>
                             </tr>
                         </table>
                     </div>
@@ -102,14 +105,6 @@
                                     </tr>
                                 ';
                             }
-                            // Tambahkan baris "Labour Charge" terakhir jika tidak ada SparePart di akhir
-                            if ($isSparePart == true) {
-                                echo '
-                                    <tr>
-                                        <td colspan="5" class="text-left"><b>Labour Charge</b></td>
-                                    </tr>
-                                ';
-                            }
                             ?>
                             </tbody>
                         </table>
@@ -117,28 +112,29 @@
                 </div>
                 <div class="col-md-12">
                     <div class="pull-right m-t-10 text-right" style="clear: both">
-                        <hr style="border-width: thin; border-style: solid;">
-                        <h4><b>Total : Rp. <?= number_format($sum, 2)?></b>
-                    </h4>
+                        <h4><b>Total : Rp. <?= number_format($sum, 2)?></b></h4>
                     </div>
                 </div>
                 <!-- SIGNATURE -->
                 <div>
-                <table style ="align:center; width:100%; padding-top:10px;">
-                <tr>
-                    <td style="text-align: left; font-size: 14px; border: none; line-height:15px;"><b>PEMBAYARAN DAPAT DITRANSFER <br style="line-height:10px;">REKENING KAMI <br>
-                    <br><p style="font-style: italic;">BCA ACC No : 2181004233 a/n SUJOKO</p></br>
-                    <br>
-                    <p style="font-style: italic;">BNI ACC No : 0164100746 a/n SUJOKO </p>
-                    </br>
-                </b></td>
-                    <td style="text-align: left; font-size: 14px; border: none; line-height:15px;">This order is Subject <br> To the terms of business </td>
-                </tr>
-                <tr>
-                    <td style="text-align: left; border: none;"></td>
-                    <td style="text-align: left; border: none; font-size: 16px;">Signature and Company Stamp</td>
-                </tr>
-                </table>
+                    <table style ="align:center; width:100%; padding-top:10px;">
+                    <tr>
+                        <td style="text-align: left; font-size: 14px; border: none; line-height:15px;">
+                            <b>PEMBAYARAN DAPAT DITRANSFER <br style="line-height:10px;">REKENING KAMI <br><br>
+                                <p style="font-style: italic;">BCA ACC No : 2181004233 a/n SUJOKO</p></br><br>
+                                <p style="font-style: italic;">BNI ACC No : 0164100746 a/n SUJOKO </p></br>
+                            </b>
+                        </td>
+                        <td style="text-align: left; font-size: 14px; border: none; line-height:15px;">
+                            This order is Subject <br> 
+                            To the terms of business
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; border: none;"></td>
+                        <td style="text-align: left; border: none; font-size: 16px;">Signature and Company Stamp</td>
+                    </tr>
+                    </table>
                 </div>
                 <!-- SIGNATURE -->
             </div>

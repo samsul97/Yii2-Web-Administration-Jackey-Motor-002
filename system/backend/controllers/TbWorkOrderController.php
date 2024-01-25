@@ -3,26 +3,25 @@
 namespace backend\controllers;
 
 use Yii;
+use backend\models\Model;
+use backend\models\TbWorkOrder;
+use backend\models\TbCustomer;
+use backend\models\TbEstimation;
 use backend\models\TbInvoice;
-use backend\models\TbInvoiceSearch;
 use backend\models\TbInvoiceService;
+use backend\models\TbMechanic;
+use backend\models\TbWorkOrderService;
+use backend\models\TbWorkOrderSearch;
+use kartik\mpdf\Pdf;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use backend\models\Model;
-use backend\models\TbCustomer;
-use kartik\mpdf\Pdf;
 use yii\helpers\ArrayHelper;
-use yii\helpers\BaseStringHelper;
-use yii\helpers\Html;
-use yii\helpers\url;
-use backend\models\TbMechanic;
-use backend\models\TbEstimationService;
 
 /**
- * TbInvoiceController implements the CRUD actions for TbInvoice model.
+ * TbWorkOrderController implements the CRUD actions for TbWorkOrder model.
  */
-class TbInvoiceController extends Controller
+class TbWorkOrderController extends Controller
 {
     /**
      * @inheritdoc
@@ -70,12 +69,12 @@ class TbInvoiceController extends Controller
     }
 
     /**
-     * Lists all TbInvoice models.
+     * Lists all TbWorkOrder models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new TbInvoiceSearch();
+        $searchModel = new TbWorkOrderSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -85,34 +84,30 @@ class TbInvoiceController extends Controller
     }
 
     /**
-     * Displays a single TbInvoice model.
+     * Displays a single TbWorkOrder model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionView($id)
     {
-        $model = $this->findModel($id);
-        $serviceAmount = TbInvoiceService::find()->andWhere(['id_tb_invoice' => $model->id])->sum('amount');
-
         return $this->render('view', [
-            'model' => $model,
-            'serviceAmount' => $serviceAmount
+            'model' => $this->findModel($id),
         ]);
     }
 
     /**
-     * Creates a new TbInvoice model.
+     * Creates a new TbWorkOrder model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        // estimasi model initial Load
-        $model = new TbInvoice;
+        // work order model initial Load
+        $model = new TbWorkOrder;
 
         // service model initial Load
-        $serviceModel = [new TbInvoiceService];
+        $serviceModel = [new TbWorkOrderService];
 
         // customer Model Initial Load
         $customerModel = new TbCustomer();
@@ -122,16 +117,17 @@ class TbInvoiceController extends Controller
 
         if ($model->load(Yii::$app->request->post())) {
             
-            $model->no_invoice = $model->generateInvoiceNumber($customerId);
+            $model->no_work_order = $model->generateWorkOrderNumber($customerId);
             $model->id_customer = $customerId;
             $model->save();
 
             // service validation
-            $serviceModel = Model::createMultiple(TbInvoiceService::classname());
+            $serviceModel = Model::createMultiple(TbWorkOrderService::classname());
             Model::loadMultiple($serviceModel, Yii::$app->request->post());
 
             // ajax validation case if used ajax
             if (Yii::$app->request->isAjax) {
+
                 // json format converting
                 Yii::$app->response->format = Response::FORMAT_JSON;
                 return ArrayHelper::merge(
@@ -153,11 +149,13 @@ class TbInvoiceController extends Controller
                 try {
                     if ($flag = $model->save(false)) {
                         foreach ($serviceModel as $item) {
-                            
-                            $item->id_tb_invoice = $model->id;
+
+                            $item->id_tb_work_order = $model->id;
 
                             if ($item->qty !== null && is_numeric($item->qty) && $item->price !== null && is_numeric($item->price)) {
-                                $item->amount = $item->qty * $item->price;
+
+                                $item->amount = intval($item->qty) * $item->price;
+
                             }
 
                             // failed store
@@ -171,7 +169,7 @@ class TbInvoiceController extends Controller
                     // success store
                     if ($flag) {
                         $transaction->commit();
-                        return $this->redirect(['index', 'id' => $model->id]);
+                        return $this->redirect(['index']);
                     }
                     
                 } catch (Exception $e) {
@@ -185,13 +183,13 @@ class TbInvoiceController extends Controller
                 'model' => $model,
                 'customer' => $customerId,
                 'customerModel' => $customerModel,
-                'serviceModel' => (empty($serviceModel)) ? [new TbInvoiceService] : $serviceModel
+                'serviceModel' => (empty($serviceModel)) ? [new TbWorkOrderService] : $serviceModel
             ]);
         }
     }
 
     /**
-     * Updates an existing TbInvoice model.
+     * Updates an existing TbWorkOrder model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
@@ -201,19 +199,18 @@ class TbInvoiceController extends Controller
     {
         $model = $this->findModel($id);
 
-        $serviceModel = $model->serviceItems;
-
         // customer ID From AJAX POST
         $customerId = Yii::$app->request->post('customer');
+        
+        // existing service data
+        $serviceModel = $model->serviceItems;
 
         if ($model->load(Yii::$app->request->post())) {
-
-            $model->no_invoice = $model->generateInvoiceNumber($customerId);
             $model->id_customer = $customerId;
             $model->save();
 
             $oldIDs = ArrayHelper::map($serviceModel, 'id', 'id');
-            $serviceModel = Model::createMultiple(TbInvoiceService::classname(), $serviceModel);
+            $serviceModel = Model::createMultiple(TbWorkOrderService::classname(), $serviceModel);
             Model::loadMultiple($serviceModel, Yii::$app->request->post());
             $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($serviceModel, 'id', 'id')));
             
@@ -225,6 +222,7 @@ class TbInvoiceController extends Controller
                     ActiveForm::validate($model)
                 );
             }
+
             // validate all models
             $valid = $model->validate();
             $valid = Model::validateMultiple($serviceModel) && $valid;
@@ -234,20 +232,17 @@ class TbInvoiceController extends Controller
                 try {
                     if ($flag = $model->save(false)) {
                         foreach ($serviceModel as $item) {
-
-                            if ($model->is_invoice == 1) { // from estimation
-                                $item->id_tb_estimation = $model->id;
-                            } else { // invoice
-                                $item->id_tb_invoice = $model->id;
-                            }
-
+                            $item->id_tb_work_order = $model->id;
                             if ($item->qty !== null && is_numeric($item->qty) && $item->price !== null && is_numeric($item->price)) {
+
                                 $item->amount = $item->qty * $item->price;
                             }
-                            if (! empty($deletedIDs)) {
-                                TbInvoiceService::deleteAll(['id' => $deletedIDs]);
+
+                            if (!empty($deletedIDs)) {
+                                TbWorkOrderService::deleteAll(['id' => $deletedIDs]);
                             }
-                            if (! ($flag = $item->save(false))) {
+
+                            if (!($flag = $item->save(false))) {
                                 $transaction->rollBack();
                                 break;
                             }
@@ -265,13 +260,13 @@ class TbInvoiceController extends Controller
         else {
             return $this->render('update', [
                 'model' => $model,
-                'serviceModel' => (empty($serviceModel)) ? [new TbInvoiceService] : $serviceModel
+                'serviceModel' => (empty($serviceModel)) ? [new TbWorkOrderService] : $serviceModel,
             ]);
         }
     }
 
     /**
-     * Deletes an existing TbInvoice model.
+     * Deletes an existing TbWorkOrder model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -285,56 +280,57 @@ class TbInvoiceController extends Controller
     }
 
     /**
-     * Finds the TbInvoice model based on its primary key value.
+     * Finds the TbWorkOrder model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return TbInvoice the loaded model
+     * @return TbWorkOrder the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = TbInvoice::findOne($id)) !== null) {
+        if (($model = TbWorkOrder::findOne($id)) !== null) {
             return $model;
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    public function actionPrintInvoice($id)
+    public function actionPrintWorkingOrder($id)
     {
-        $model = TbInvoice::findOne($id);
+        $model = TbWorkOrder::findOne($id);
 
-        $allServices = TbInvoiceService::find()
-                    ->where(['id_tb_invoice' => $model->id])
+        $allServices = TbWorkOrderService::find()
+                    ->where(['id_tb_work_order' => $model->id])
                     ->orderBy(['qty' => SORT_DESC])
                     ->all();
 
-        $sum = TbInvoiceService::find()->where(['id_tb_invoice' => $model->id])->sum('amount');
+        $sumAmount = TbWorkOrderService::find()
+                    ->andWhere(['id_tb_work_order' => $model->id])
+                    ->sum('amount');
 
-        $content = $this->renderPartial('/tb-invoice/print/invoice', [
-                'model' => $model,
-                'allServices' => $allServices,
-                'sum' => $sum,
-                ]);
+        $content = $this->renderPartial('/tb-work-order/print/working-order', [
+            'model' => $model,
+            'allServices' => $allServices,
+            'sumAmount' => $sumAmount,
+        ]);
         
         $cssInline = <<< CSS
-        .table1 {
-            font-family: sans-serif;
-            /* font-weight:normal; */
-            color: #232323;
-            border-collapse: collapse;
-            width: 100%;
-            border: 1px solid #000000;
-            font-weight: bold;
-        }
-        .table1, th, td {
-            border: 1px solid #000000;
-            padding: 3px 2px;
-        }
-        .table1 tr:hover {
-            background-color: #f5f5f5;
-        }
+            .table1 {
+                font-family: sans-serif;
+                color: #232323;
+                border-collapse: collapse;
+                width: 100%;
+                border: 1px solid #000000;
+            }
+            .table1, th, td {
+                border: 1px solid #000000;
+                padding: 3px 2px;
+            }
+            .table1 tr:hover {
+                background-color: #f5f5f5;
+            }
         CSS;
+
         $pdf = new Pdf([
             'mode' => Pdf::MODE_UTF8,
             'marginLeft' => 5,
@@ -346,85 +342,88 @@ class TbInvoiceController extends Controller
             'content' => $content,
             'cssInline' => $cssInline,
             'cssFile' => '@vendor/kartik-v/yii2-mpdf/src/assets/kv-mpdf-bootstrap.min.css',
-            'options' => ['title' => 'Invoice Order'],
+            'options' => ['title' => 'Working Order'],
             'methods' => [
                 'SetHeader'=> [null],
-                'SetFooter'=> [null]
+                'SetFooter'=> [null],
             ]
         ]);
-
         $date = date('d-m-Y His');
-        $pdf->filename = "Invoice - ".$date.".pdf";
+        $pdf->filename = "Work Order - ". $date . '-' . $model->customer->name .".pdf";
         return $pdf->render();
-    }
-
-    public function actionCustomerData($id)
-    {
-        $customerData = TbCustomer::findOne(['id' => $id]);
-        
-        return json_encode(array(
-            'plate' => $customerData->plate,
-            'model' => $customerData->model,
-            'merk' => $customerData->merk,
-            'chasis' => $customerData->chasis,
-            'engine' => $customerData->engine,
-            )
-        );
     }
 
     public function actionDetail($id)
     {
-        $model = TbInvoice::findOne(['id' => $id]);
+        $model = TbWorkOrder::findOne($id);
 
-        $customer = TbCustomer::find()->where(['id' => $model->id_customer])->one();
-
-        $allServices = TbInvoiceService::find()
-                    ->where(['id_tb_invoice' => $model->id])
+        // services array
+        $allServices = TbWorkOrderService::find()
+                    ->where(['id_tb_work_order' => $model->id])
                     ->orderBy(['qty' => SORT_DESC])
                     ->all();
 
-        $sum = TbInvoiceService::find()->where(['id_tb_invoice' => $model->id])->sum('amount');
-
+        $customer = TbCustomer::find()->where(['id' => $model->id_customer])->one();
+        
         return $this->renderAjax('_detail', [
             'model' => $model,
             'customer' => $customer,
             'allServices' => $allServices,
-            'sum' => $sum,
         ]);
     }
 
-    public function actionEditStatus($id, $is_out)
-    {
-        $model = $this->findModel($id);
-        $model->is_out = $is_out;
+    public function actionGenerateInvoice($id) {
+        // work order
+        $workOrder = TbWorkOrder::findOne($id);
+        $workOrder->is_invoice = TbInvoice::IS_INVOICE;
+        $workOrder->save();
 
-        if ($model->save(false)) {
-            Yii::$app->getSession()->setFlash('invoice_payment_success', [
-                'type'     => 'success',
-                'duration' => 5000,
-                'title'    => 'Payment Status',
-                'message'  => 'Invoice berhasil di bayar!',
-            ]);
-            return $this->redirect(Yii::$app->request->referrer);
+        // estimation
+        if ($workOrder->id_estimation) { // jika punya nilai dari estimasi
+            $estimation = TbEstimation::find()->where(['id' => $workOrder->id_estimation])->one();
+            $estimation->is_invoice = TbInvoice::IS_INVOICE;
+            $estimation->save();
         }
-        else
-        {
-            if ($model->errors)
-            {
-                $message = "";
-                foreach ($model->errors as $key => $value) {
-                    foreach ($value as $key1 => $value2) {
-                        $message .= $value2;
-                    }
-                }
-                Yii::$app->getSession()->setFlash('invoice_payment_failed', [
-                        'type'     => 'error',
-                        'duration' => 5000,
-                        'title'  => 'Error',
-                        'message'  => $message,
-                    ]
-                );
+
+        // invoice - retrieve data from work order
+        $invoice = new TbInvoice();
+        $invoice->id_work_order = $workOrder->id;
+        $invoice->id_customer = $workOrder->id_customer;
+        $invoice->id_mechanic = $workOrder->id_mechanic;
+        $invoice->no_invoice = $invoice->generateInvoiceNumber($workOrder->id_customer);
+        $invoice->broughtin = $workOrder->broughtin;
+        $invoice->received = $workOrder->received;
+        $invoice->datein = $workOrder->datein;
+        $invoice->dateout = $workOrder->dateout;
+        if ($workOrder->id_estimation) {
+            $invoice->generate_status = TbInvoice::FROM_WORK_ORDER_AND_ESTIMATION;
+        }
+        $invoice->save(false);
+
+        // store service to table service invoice from service work order
+        $serviceWorkOrder = TbWorkOrderService::find()->where(['id_tb_work_order' => $workOrder->id])->all();
+
+        if (is_array($serviceWorkOrder)) {
+            foreach ($serviceWorkOrder as $key => $value) {
+                $service = new TbInvoiceService();
+                $service->id_tb_invoice = $invoice->id;
+                $service->name = $value->name;
+                $service->qty = $value->qty;
+                $service->price = $value->price;
+                $service->amount = $value->amount;
+                $service->save(false);
+                
             }
         }
+
+        Yii::$app->getSession()->setFlash('generate_invoice_success', [
+                'type'     => 'success',
+                'duration' => 5000,
+                'title'    => 'System Information',
+                'message'  => 'Berhasil membuat Invoice',
+            ]
+        );
+
+        return $this->redirect(['/tb-invoice/view', 'id' => $invoice->id]);
     }
 }

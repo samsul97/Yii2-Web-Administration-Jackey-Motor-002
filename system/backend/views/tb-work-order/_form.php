@@ -1,5 +1,4 @@
 <?php
-
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\date\DatePicker;
@@ -7,12 +6,13 @@ use kidzen\dynamicform\DynamicFormWidget;
 use kartik\select2\Select2;
 use yii\helpers\Url;
 use kartik\money\MaskMoney;
+
 /* @var $this yii\web\View */
-/* @var $model backend\models\TbInvoice */
+/* @var $model backend\models\TbWorkOrder */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="tb-estimation-form">
+<div class="tb-work-order-form">
 
     <?php $form = ActiveForm::begin(['id' => 'dynamic-form']); ?>
 

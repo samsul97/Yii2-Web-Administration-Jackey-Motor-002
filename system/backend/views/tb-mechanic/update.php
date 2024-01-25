@@ -5,9 +5,8 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbMechanic */
 
-$this->title = 'Update Mechanic: ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Data Mechanic', 'url' => ['index']];
-// $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
+$this->title = 'Edit Mekanik : ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Mekanik', 'url' => ['index']];
 $this->params['breadcrumbs'][] = 'Update';
 ?>
 <div class="card table-card">

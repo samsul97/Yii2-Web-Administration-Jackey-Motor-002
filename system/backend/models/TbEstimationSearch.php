@@ -18,7 +18,7 @@ class TbEstimationSearch extends TbEstimation
     {
         return [
             [['id', 'id_mechanic', 'id_customer'], 'integer'],
-            [['broughtin', 'received', 'regdate', 'datein', 'dateout', 'km', 'timestamp', 'no_estimation'], 'safe'],
+            [['broughtin', 'received', 'datein', 'dateout', 'timestamp', 'no_estimation'], 'safe'],
         ];
     }
 
@@ -70,9 +70,7 @@ class TbEstimationSearch extends TbEstimation
         $query
             ->andFilterWhere(['like', 'broughtin', $this->broughtin])
             ->andFilterWhere(['like', 'received', $this->received])
-            ->andFilterWhere(['like', 'no_estimation', $this->no_estimation])
-            ->andFilterWhere(['like', 'regdate', $this->regdate])
-            ->andFilterWhere(['like', 'km', $this->km]);
+            ->andFilterWhere(['like', 'no_estimation', $this->no_estimation]);
 
         return $dataProvider;
     }

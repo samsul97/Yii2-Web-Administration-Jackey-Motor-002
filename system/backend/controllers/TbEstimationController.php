@@ -5,17 +5,18 @@ namespace backend\controllers;
 use Yii;
 use backend\models\TbEstimation;
 use backend\models\TbCustomer;
-use backend\models\TbService;
+use backend\models\TbInvoiceService;
 use backend\models\TbEstimationSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use backend\models\Model;
 use backend\models\TbInvoice;
-use backend\models\TbServiceEstimation;
+use backend\models\TbEstimationService;
+use backend\models\TbWorkOrder;
+use backend\models\TbWorkOrderService;
 use kartik\mpdf\Pdf;
 use yii\helpers\ArrayHelper;
-use yii\helpers\BaseStringHelper;
 use yii\widgets\ActiveForm;
 use yii\web\Response;
 
@@ -102,13 +103,13 @@ class TbEstimationController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate($idCustomer = null)
+    public function actionCreate()
     {
         // estimasi model initial Load
         $model = new TbEstimation;
 
         // service model initial Load
-        $serviceModel = [new TbServiceEstimation];
+        $serviceModel = [new TbEstimationService];
 
         // customer Model Initial Load
         $customerModel = new TbCustomer();
@@ -123,7 +124,7 @@ class TbEstimationController extends Controller
             $model->save();
 
             // service validation
-            $serviceModel = Model::createMultiple(TbServiceEstimation::classname());
+            $serviceModel = Model::createMultiple(TbEstimationService::classname());
             Model::loadMultiple($serviceModel, Yii::$app->request->post());
 
             // ajax validation case if used ajax
@@ -141,10 +142,8 @@ class TbEstimationController extends Controller
             $valid = $model->validate();
             $valid = Model::validateMultiple($serviceModel) && $valid;
 
-
             // multiple store with validation
             if ($valid) {
-                
                 // yii function for transaction process
                 $transaction = \Yii::$app->db->beginTransaction();
 
@@ -155,9 +154,7 @@ class TbEstimationController extends Controller
                             $item->id_tb_estimation = $model->id;
 
                             if ($item->qty !== null && is_numeric($item->qty) && $item->price !== null && is_numeric($item->price)) {
-
                                 $item->amount = intval($item->qty) * $item->price;
-
                             }
 
                             // failed store
@@ -166,7 +163,6 @@ class TbEstimationController extends Controller
                                 break;
                             }
                         }
-
                     }
 
                     // success store
@@ -186,7 +182,7 @@ class TbEstimationController extends Controller
                 'model' => $model,
                 'customer' => $customerId,
                 'customerModel' => $customerModel,
-                'serviceModel' => (empty($serviceModel)) ? [new TbServiceEstimation] : $serviceModel
+                'serviceModel' => (empty($serviceModel)) ? [new TbEstimationService] : $serviceModel
             ]);
         }
     }
@@ -205,7 +201,7 @@ class TbEstimationController extends Controller
         // customer ID From AJAX POST
         $customerId = Yii::$app->request->post('customer');
         
-        $serviceModel = $model->orderItems;
+        $serviceModel = $model->serviceItems;
 
         if ($model->load(Yii::$app->request->post())) {
             
@@ -214,7 +210,7 @@ class TbEstimationController extends Controller
             $model->save();
 
             $oldIDs = ArrayHelper::map($serviceModel, 'id', 'id');
-            $serviceModel = Model::createMultiple(TbServiceEstimation::classname(), $serviceModel);
+            $serviceModel = Model::createMultiple(TbEstimationService::classname(), $serviceModel);
             Model::loadMultiple($serviceModel, Yii::$app->request->post());
             $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($serviceModel, 'id', 'id')));
             
@@ -234,18 +230,19 @@ class TbEstimationController extends Controller
                 $transaction = \Yii::$app->db->beginTransaction();
                 try {
                     if ($flag = $model->save(false)) {
-                        foreach ($serviceModel as $modelAddress) {
-                            $modelAddress->id_tb_estimation = $model->id;
-                            if ($modelAddress->qty !== null && is_numeric($modelAddress->qty) && $modelAddress->price !== null && is_numeric($modelAddress->price)) {
+                        foreach ($serviceModel as $item) {
 
-                                $modelAddress->amount = $modelAddress->qty * $modelAddress->price;
+                            $item->id_tb_estimation = $model->id;
+                            
+                            if ($item->qty !== null && is_numeric($item->qty) && $item->price !== null && is_numeric($item->price)) {
+                                $item->amount = $item->qty * $item->price;
                             }
 
-                            if (! empty($deletedIDs)) {
-                                TbServiceEstimation::deleteAll(['id' => $deletedIDs]);
+                            if (!empty($deletedIDs)) {
+                                TbEstimationService::deleteAll(['id' => $deletedIDs]);
                             }
 
-                            if (! ($flag = $modelAddress->save(false))) {
+                            if (!($flag = $item->save(false))) {
                                 $transaction->rollBack();
                                 break;
                             }
@@ -260,14 +257,11 @@ class TbEstimationController extends Controller
                 }
             }
         }
-
-        else {
-        //     print_r($serviceModel);
-        // die;
+        else 
+        {
             return $this->render('update', [
                 'model' => $model,
-                'serviceModel' => (empty($serviceModel)) ? [new TbServiceEstimation] : $serviceModel,
-                // 'customerModel' => $customerModel,
+                'serviceModel' => (empty($serviceModel)) ? [new TbEstimationService] : $serviceModel,
             ]);
         }
     }
@@ -307,20 +301,19 @@ class TbEstimationController extends Controller
         $model = TbEstimation::findOne($id);
 
         // services array
-        $allServices = TbServiceEstimation::find()
+        $allServices = TbEstimationService::find()
                     ->where(['id_tb_estimation' => $model->id])
                     ->orderBy(['qty' => SORT_DESC])
                     ->all();
 
         // total price
-        $sum = TbServiceEstimation::find()
+        $sum = TbEstimationService::find()
                 ->where(['id_tb_estimation' => $model->id])
                 ->sum('amount');
         
-        $content = $this->renderPartial('/tb-invoice/print/estimation', [
+        $content = $this->renderPartial('/tb-estimation/print/estimation', [
                     'model' => $model,
                     'allServices' => $allServices,
-                    'id' => $id,
                     'sum' => $sum,
                 ]);
 
@@ -374,6 +367,8 @@ class TbEstimationController extends Controller
             'merk' => $customerData->merk,
             'chasis' => $customerData->chasis,
             'engine' => $customerData->engine,
+            'km' => $customerData->km,
+            'regdate' => $customerData->regdate,
             )
         );
     }
@@ -383,13 +378,13 @@ class TbEstimationController extends Controller
         $model = TbEstimation::findOne($id);
 
         // services array
-        $allServices = TbServiceEstimation::find()
+        $allServices = TbEstimationService::find()
                     ->where(['id_tb_estimation' => $model->id])
                     ->orderBy(['qty' => SORT_DESC])
                     ->all();
 
         // total price
-        $sum = TbServiceEstimation::find()
+        $sum = TbEstimationService::find()
             ->where(['id_tb_estimation' => $model->id])
             ->sum('amount');
 
@@ -403,35 +398,32 @@ class TbEstimationController extends Controller
         ]);
     }
 
-    public function actionGenerateInvoice($id) {
+    public function actionGenerateWorkOrder($id) {
         // estimation
         $estimation = TbEstimation::findOne($id);
-        $estimation->is_invoice = 1;
+        $estimation->is_work_order = 1;
         $estimation->save();
 
-        // invoice - retrieve data from estimation
-        $invoice = new TbInvoice();
-        $invoice->id_estimation = $estimation->id;
-        $invoice->id_customer = $estimation->id_customer;
-        $invoice->id_mechanic = $estimation->id_mechanic;
-        $invoice->no_invoice = $invoice->generateInvoiceNumber($estimation->id_customer);
-        $invoice->broughtin = $estimation->broughtin;
-        $invoice->received = $estimation->received;
-        $invoice->regdate = $estimation->regdate;
-        $invoice->datein = $estimation->datein;
-        $invoice->dateout = $estimation->dateout;
-        $invoice->km = $estimation->km;
-        $invoice->is_invoice = 1; // from estimation
-        $invoice->save(false);
+        // work order - retrieve data from estimation
+        $workOrder = new TbWorkOrder();
+        $workOrder->no_work_order = $workOrder->generateWorkOrderNumber($estimation->id_customer);
+        $workOrder->id_estimation = $estimation->id;
+        $workOrder->id_customer = $estimation->id_customer;
+        $workOrder->id_mechanic = $estimation->id_mechanic;
+        $workOrder->broughtin = $estimation->broughtin;
+        $workOrder->received = $estimation->received;
+        $workOrder->datein = $estimation->datein;
+        $workOrder->dateout = $estimation->dateout;
+        $workOrder->generate_status = TbEstimation::FROM_ESTIMATION; // from estimation
+        $workOrder->save(false);
 
-        // store service to table service invoice from service estimation
-        $serviceEstimation = TbServiceEstimation::find()->where(['id_tb_estimation' => $estimation->id])->all();
+        // store service to table service work order from service estimation
+        $serviceEstimation = TbEstimationService::find()->where(['id_tb_estimation' => $estimation->id])->all();
 
         if (is_array($serviceEstimation)) {
             foreach ($serviceEstimation as $key => $value) {
-                $service = new TbService();
-                $service->id_tb_estimation = $estimation->id;
-                $service->id_tb_invoice = null;
+                $service = new TbWorkOrderService();
+                $service->id_tb_work_order = $workOrder->id;
                 $service->name = $value->name;
                 $service->qty = $value->qty;
                 $service->price = $value->price;
@@ -441,89 +433,26 @@ class TbEstimationController extends Controller
             }
         }
 
-        Yii::$app->getSession()->setFlash('generate_invoice_success', [
+        Yii::$app->getSession()->setFlash('generate_work_order_success', [
                 'type'     => 'success',
                 'duration' => 5000,
                 'title'    => 'System Information',
-                'message'  => 'Berhasil membuat Invoice',
+                'message'  => 'Berhasil membuat Work Order',
             ]
         );
 
-        return $this->redirect(['/tb-invoice/index']);
+        return $this->redirect(['view-work-order', 'id' => $estimation->id]);
     }
 
-    public function actionCheckInvoice($id) {
+    public function actionViewWorkOrder($id)
+    {
+        $model = $this->findModel($id);
 
-        $estimation = $this->findModel($id);
+        $workOrder = $model->workOrder;
         
-        $model = TbInvoice::find()->where(['id_estimation' => $estimation->id])->one();
-        
-        $serviceModel = $model->orderItems;
-
-        // customer ID From AJAX POST
-        $customerId = Yii::$app->request->post('customer');
-
-        if ($model->load(Yii::$app->request->post())) {
-
-            $model->no_invoice = $model->generateInvoiceNumber($customerId);
-            $model->id_customer = $customerId;
-            $model->save();
-
-            $oldIDs = ArrayHelper::map($serviceModel, 'id', 'id');
-            $serviceModel = Model::createMultiple(TbService::classname(), $serviceModel);
-            Model::loadMultiple($serviceModel, Yii::$app->request->post());
-            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($serviceModel, 'id', 'id')));
-            
-            // ajax validation
-            if (Yii::$app->request->isAjax) {
-                Yii::$app->response->format = Response::FORMAT_JSON;
-                return ArrayHelper::merge(
-                    ActiveForm::validateMultiple($serviceModel),
-                    ActiveForm::validate($model)
-                );
-            }
-            // validate all models
-            $valid = $model->validate();
-            $valid = Model::validateMultiple($serviceModel) && $valid;
-
-            if ($valid) {
-                $transaction = \Yii::$app->db->beginTransaction();
-                try {
-                    if ($flag = $model->save(false)) {
-                        foreach ($serviceModel as $item) {
-
-                            if ($model->is_invoice == 1) { // from estimation
-                                $item->id_tb_estimation = $model->id;
-                            } else { // invoice
-                                $item->id_tb_invoice = $model->id;
-                            }
-
-                            if ($item->qty !== null && is_numeric($item->qty) && $item->price !== null && is_numeric($item->price)) {
-                                $item->amount = $item->qty * $item->price;
-                            }
-                            if (! empty($deletedIDs)) {
-                                TbService::deleteAll(['id' => $deletedIDs]);
-                            }
-                            if (! ($flag = $item->save(false))) {
-                                $transaction->rollBack();
-                                break;
-                            }
-                        }
-                    }
-                    if ($flag) {
-                        $transaction->commit();
-                        return $this->redirect(['/tb-invoice/index']);
-                    }
-                } catch (Exception $e) {
-                    $transaction->rollBack();
-                }
-            }
-        }
-        else {
-            return $this->render('/tb-invoice/update', [
-                'model' => $model,
-                'serviceModel' => (empty($serviceModel)) ? [new TbService] : $serviceModel
-            ]);
-        }
+        return $this->render('view_work_order', [
+            'model' => $this->findModel($id),
+            'workOrder' => $workOrder,
+        ]);
     }
 }

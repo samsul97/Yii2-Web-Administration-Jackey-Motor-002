@@ -16,12 +16,12 @@ class Model extends \yii\base\Model
      */
     public static function createMultiple($modelClass, $multipleModels = [])
     {
-        $serviceModel    = new $modelClass;
+        $serviceModel = new $modelClass;
         $formName = $serviceModel->formName();
-        $post     = Yii::$app->request->post($formName);
+        $post = Yii::$app->request->post($formName);
         
         // null array
-        $models   = [];
+        $models = [];
 
         // if not empty array, then validation running used map array static id
         if (!empty($multipleModels)) {
@@ -29,7 +29,6 @@ class Model extends \yii\base\Model
             $multipleModels = array_combine($keys, $multipleModels);
         }
 
-        
         // post data service
         if ($post && is_array($post)) {
             foreach ($post as $i => $item) {

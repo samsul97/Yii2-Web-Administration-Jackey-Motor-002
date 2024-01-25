@@ -9,7 +9,7 @@ use yii\bootstrap4\Modal;
 /* @var $searchModel backend\models\TbCustomerSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Data Pelanggan';
+$this->title = 'Daftar Pelanggan';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">
@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-text">
             <div class="tb-customer-index">
             <p>
-                <?= Html::a('Tambah Customer', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Tambah Pelanggan', ['create'], ['class' => 'btn btn-success']) ?>
             </p>
                 <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
                 <div class="table-responsive table-nowrap">
@@ -40,17 +40,12 @@ $this->params['breadcrumbs'][] = $this->title;
                         ],
                         'name',
                         'phone',
-                        'chasis',
-                        'plate',
-                        'engine',
-                        'model',
-                        'merk',
                         'address:ntext',
-                        'timestamp',
+                        'plate',
                         [
                             'class' => 'yii\grid\ActionColumn',
                             'header' => 'Action',
-                            'template' => '{view} {update}',
+                            'template' => '{view} {update} {delete}',
                             'buttons' => [
                                 'view' => function($url, $model) {
                                     return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
@@ -81,9 +76,6 @@ $this->params['breadcrumbs'][] = $this->title;
                         'columns' => $gridColumns,
                         'dataProvider' => $dataProvider,
                         'filename' => 'Customer',
-                        //'stream' => false,
-                        //'linkPath' => false,
-                        // 'batchSize' => 1024,
                     ]);
                     ?>
                     <?= GridView::widget([

@@ -1,5 +1,6 @@
 <?php
 
+use backend\models\TbInvoice;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use kartik\export\ExportMenu;
@@ -9,7 +10,7 @@ use yii\bootstrap4\Modal;
 /* @var $searchModel backend\models\TbInvoiceSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Data Invoice';
+$this->title = 'Daftar Invoice';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
@@ -39,58 +40,67 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'headerOptions' => ['style' => 'text-align:center'],
                                 'contentOptions' => ['style' => 'text-align:center']
                             ],
-                            // 'id',
-                            // 'no_invoice',
                             'received',
-                            'regdate',
+                            'broughtin',
                             'datein',
                             'dateout',
-                            'km',
                             [
                             'format' => 'raw',
-                            'attribute' => 'is_invoice',
+                            'attribute' => 'generate_status',
                             'value' => function ($model) {
-                                if ($model->is_invoice == 0) {
-                                    return '<button class="btn btn-danger disable">'. 'Invoice' .'</button>';
+                                if ($model->generate_status == TbInvoice::FROM_WORK_ORDER) {
+                                    return '<button class="btn btn-danger disable">'. 'Work Order' .'</button>';
                                 } else {
-                                    return '<button class="btn btn-warning disable">'. 'Estimation' .'</button>';
+                                    return '<button class="btn btn-warning disable">'. 'WO & Estimation' .'</button>';
                                 }
                             },
                                 'filter'=>[
-                                    0 => 'Invoice',
-                                    1 => 'Estimation',
+                                    0 => 'Work Order',
+                                    1 => 'Wo & Estimation',
                                 ],
                             ],
                             [
                                 'format' => 'raw',
                                 'attribute' => 'is_out',
                                 'value' => function ($model) {
-                                    if ($model->is_out == 0) {
-                                        return Html::a('<button class ="btn btn-'. ($model->is_out == 0 ? 'info' : 'secondary') .'"> '. ($model->is_out == 0 ? '' : 'Sudah di ') .'Process </button>', ['tb-invoice/edit-status', 'id' => $model->id, 'is_out' => ($model->is_out == 0 ? 1 : 1)], ['data' => ['confirm' => ($model->is_out == 0 ? 'Apa Anda yakin Invoice ini sudah terbayar?' : false)],]);
+                                    if ($model->is_out == TbInvoice::IS_NOT_OUT) {
+                                        $icon = ($model->is_out == 0) ? '<i class="fa fa-times"></i> ' : '<i class="fa fa-check"></i> ';
+                                        return Html::a(
+                                            '<button class="btn btn-' . ($model->is_out == 0 ? 'danger' : 'secondary') . '">' . $icon . ($model->is_out == 0 ? '' : 'Sudah di ') . 'Belum dibayar </button>',
+                                            ['tb-invoice/edit-status', 'id' => $model->id, 'is_out' => ($model->is_out == 0 ? 1 : 1)],
+                                            ['data' => ['confirm' => ($model->is_out == 0 ? 'Apa Anda yakin Invoice ini sudah terbayar?' : false)]]
+                                        );
                                     } else {
-                                        return '<button class="btn btn-success disable">'. "Payment Success" .'</button>';
+                                        return '<button class="btn btn-success disable"><i class="fa fa-check"></i> Dibayar</button>';
                                     }
                                 },
                                 'filter'=>[
-                                    0 => 'Process',
-                                    1 => 'Payment Success',
+                                    0 => 'Unpaid',
+                                    1 => 'Paid',
                                 ],
                             ],
-                            'timestamp',
                             [
                                 'class' => 'yii\grid\ActionColumn',
                                 'header' => 'Action',
-                                'template' => '{view} {update} {printinvoice} {wo}',
+                                'template' => '{detail} {view} {update} {delete} {print-invoice} {print-working-order} {print-estimation}',
                                 'buttons' => [
-                                    'view' => function($url, $model) {
+                                    'detail' => function($url, $model) {
                                         return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
                                             ['detail', 'id' => $model['id']], 
-                                            ['title' => 'View', 'class' => 'popupInvoice', 'data' => 
+                                            ['title' => 'Quick View', 'class' => 'popupInvoice', 'data' => 
                                             ['pjax' => 1]
                                         ]);
                                     },
+                                    'view' => function($url, $model) {
+                                        return Html::a('<button class="btn btn-sm btn-secondary"><i class="fa fa-eye"></i></button>', 
+                                            ['view', 'id' => $model['id']], 
+                                            [
+                                                'title' => 'View', 'data' => ['pjax' => 1]
+                                            ]
+                                        );
+                                    },
                                     'update' => function($url, $model) {
-                                        if ($model->is_out == 0) {
+                                        if ($model->is_out == TbInvoice::IS_NOT_OUT) {
                                             return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button>', 
                                                 ['update', 'id' => $model['id']], 
                                                 ['title' => 'Update', 'data' => 
@@ -98,26 +108,36 @@ $this->params['breadcrumbs'][] = $this->title;
                                             ]);
                                         }
                                     },
-                                    'printinvoice' => function($url, $model) {
-                                        return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-money-check"></i></button>', 
-                                            ['print-invoice', 'id' => $model['id']], 
-                                            ['title' => 'Print Invoice', 'data' => 
-                                            ['pjax' => 1]
-                                        ]);
-                                    },
                                     'delete' => function($url, $model) {
-                                        return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>', 
-                                            ['delete', 'id' => $model['id']], 
-                                            ['title' => 'Delete', 'class' => '', 'data' => 
-                                            ['confirm' => 'Apakah anda ingin menghapus data ?', 'method' => 'post', 'pjax' => 1],
-                                        ]);
+                                        if ($model->is_out == TbInvoice::IS_NOT_OUT) {
+                                            return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>', 
+                                                ['delete', 'id' => $model['id']], 
+                                                ['title' => 'Delete', 'class' => '', 'data' => 
+                                                ['confirm' => 'Apakah anda ingin menghapus data ?', 'method' => 'post', 'pjax' => 1],
+                                            ]);
+                                        }
                                     },
-                                    'wo' => function($url, $model) {
-                                        return Html::a('<button class="btn btn-sm btn-info"><i class="fa fa-money-check"></i></button>', 
-                                            ['print-mechanic', 'id' => $model['id']], 
-                                            ['title' => 'Print Working Order', 'data' => 
+                                    'print-invoice' => function($url, $model) {
+                                        return Html::a('<button class="btn btn-sm btn-warning"><i class="fa fa-print"></i></button>', 
+                                            ['print-invoice', 'id' => $model['id']], 
+                                            ['title' => 'Cetak Invoice', 'data' => 
                                             ['pjax' => 1]
                                         ]);
+                                    },
+                                    'print-working-order' => function($url, $model) {
+                                        return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-wrench"></i></button>', 
+                                            ['tb-work-order/print-working-order', 'id' => $model->workOrder->id], 
+                                            ['title' => 'Cetak Working Order'
+                                        ]);
+                                    },
+                                    'print-estimation' => function($url, $model) {
+                                        if ($model->generate_status == TbInvoice::FROM_WORK_ORDER_AND_ESTIMATION &&
+                                            $model->workOrder->estimation) {
+                                            return Html::a('<button class="btn btn-sm btn-info"><i class="fa fa-money-check"></i></button>', 
+                                                ['tb-estimation/print-estimation', 'id' => $model->workOrder->estimation->id], 
+                                                ['title' => 'Cetak Estimasi'
+                                            ]);
+                                        }
                                     },
                                 ]
                             ],
@@ -128,9 +148,6 @@ $this->params['breadcrumbs'][] = $this->title;
                             'columns' => $gridColumns,
                             'dataProvider' => $dataProvider,
                             'filename' => 'Data Invoice',
-                            //'stream' => false,
-                            //'linkPath' => false,
-                            // 'batchSize' => 1024,
                         ]);
                     ?>
                     <?= GridView::widget([

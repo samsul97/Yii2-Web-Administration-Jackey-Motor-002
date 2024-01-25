@@ -1,5 +1,8 @@
 <?php
 
+use backend\models\TbCustomer;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -17,7 +20,19 @@ use yii\widgets\ActiveForm;
 
     <div class="row">
         <div class="col-lg-6">
-            <?= $form->field($model, 'no_estimation') ?>    
+            <?= $form->field($model, 'id_customer')->widget(Select2::classname(),[
+                    'data' => ArrayHelper::map(TbCustomer::find()->joinWith('tbWorkOrder')->all(), 'id', 'plate'),
+                    'options' => [
+                        'placeholder' => 'Cari Berdasarkan No Plat',
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => false
+                    ],
+                ]);
+            ?>
+        </div>
+        <div class="col-lg-6">
+            <?= $form->field($model, 'no_estimation')->textInput(['placeholder' => 'Cari Berdasarkan No Order Estimasi']) ?>
         </div>
     </div>
 

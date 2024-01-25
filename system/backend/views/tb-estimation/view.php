@@ -1,11 +1,11 @@
 <?php
 
-use backend\models\TbService;
+use backend\models\TbInvoiceService;
 use yii\helpers\Html;
 use yii\widgets\DetailView;
 use yii\grid\GridView;
 
-$sum = TbService::find()->andWhere(['id_tb_estimation' => $model->id])->sum('amount');
+$sum = TbInvoiceService::find()->andWhere(['id_tb_estimation' => $model->id])->sum('amount');
 
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbInvoice */
@@ -42,14 +42,11 @@ $this->params['breadcrumbs'][] = $this->title;
                     'model' => $model,
                     'template' => '<tr><th width="180px" style="text-align:right">{label}</th><td>{value}</td></tr>',
                     'attributes' => [
-                        // 'id',
                         'name_cust',
                         'address_cust',
                         'phone_cust',
                         'number_plate',
                         'model',
-                        // 'variant',
-                        // 'prod_year',
                         'merk',
                         'chasis',
                         'received',
@@ -68,12 +65,9 @@ $this->params['breadcrumbs'][] = $this->title;
                         'pagination'=>false,
                     ]),
                     'showFooter' => true,
-                    'columns'=>[
-                        // 'id',
+                    'columns'=> [
                         'name',
                         'qty',
-                        // 'price',
-                        // 'amount',
                         [
                             'attribute' => 'price',
                             'label' => 'Harga',
@@ -87,7 +81,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 return number_format($model->amount, 2);
                             },
                             'footer' => '<b> Rp.' . number_format($sum, 2) . '</b>',       
-                          ],
+                        ],
                     ]
                 ]) ?>
             </div>

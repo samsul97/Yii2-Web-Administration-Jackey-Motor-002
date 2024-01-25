@@ -1,5 +1,5 @@
 <div class="table-responsive table-nowrap">
-    <h2>Data Customer</h2>
+    <h2>Data Pelanggan</h2>
     <p>Nama     : <?= $customer->name ?></p>
     <p>Telp     : <?= $customer->phone ?></p>
     <p>Alamat   : <?= $customer->address ?></p>
@@ -8,15 +8,15 @@
     <p>Engine   : <?= $customer->engine ?></p>
     <p>model    : <?= $customer->model ?></p>
     <p>Merk     : <?= $customer->merk ?></p>
+    <p>KM     : <?= $customer->km ?></p>
+    <p>Regdate     : <?= $customer->regdate ?></p>
     
     <h2>Data Estimasi</h2>
     <p>Kode     : <?= $model->no_estimation ?></p>
-    <p>broughtin: <?= $model->broughtin ?></p>
-    <p>received : <?= $model->received ?></p>
-    <p>regdate  : <?= $model->regdate ?></p>
-    <p>datein   : <?= $model->datein ?></p>
-    <p>dateout   : <?= $model->dateout ?></p>
-    <p>KM   : <?= $model->km ?></p>
+    <p>Broughtin: <?= $model->broughtin ?></p>
+    <p>Received : <?= $model->received ?></p>
+    <p>Datein   : <?= $model->datein ?></p>
+    <p>Dateout   : <?= $model->dateout ?></p>
 
     <h2>Data Service</h2>
     <table class="table1">
@@ -68,14 +68,6 @@
                     <td class="text-center"><b>' . ($serviced->qty ? $serviced->qty : 0)  . '</b></td>
                     <td class="text-center"><b>' . number_format($serviced['price'], 0) . '</b></td>
                     <td class="text-center"><b>Rp ' . number_format($serviced['amount'], 2) . '</b></td>
-                </tr>
-            ';
-        }
-        // Tambahkan baris "Labour Charge" terakhir jika tidak ada SparePart di akhir
-        if ($isSparePart == true) {
-            echo '
-                <tr>
-                    <td colspan="5" class="text-left"><b>Labour Charge</b></td>
                 </tr>
             ';
         }

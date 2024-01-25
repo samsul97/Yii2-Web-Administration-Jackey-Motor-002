@@ -3,11 +3,11 @@
 use yii\helpers\Html;
 
 /* @var $this yii\web\View */
-/* @var $model backend\models\TbCustomer */
+/* @var $model backend\models\TbWorkOrder */
 
-$this->title = 'Edit Pelanggan : ' . $model->name;
-$this->params['breadcrumbs'][] = ['label' => 'Pelanggan', 'url' => ['index']];
-$this->params['breadcrumbs'][] = 'Edit';
+$this->title = 'Tambah Work Order';
+$this->params['breadcrumbs'][] = ['label' => 'Work Order', 'url' => ['index']];
+$this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">
     <div class="card-header">
@@ -23,10 +23,13 @@ $this->params['breadcrumbs'][] = 'Edit';
     </div>
     <div class="card-body">
         <div class="card-text">
-			<div class="tb-customer-update">
-                <?= $this->render('_form', [
-                    'model' => $model,
-                ]) ?>
+			<div class="tb-work-order-create">
+			    <?= $this->render('_form', [
+			        'model' => $model,
+                    'customer' => $customer,
+                    'customerModel' => $customerModel,
+                    'serviceModel' => $serviceModel,
+			    ]) ?>
 			</div>
 		</div>
 	</div>

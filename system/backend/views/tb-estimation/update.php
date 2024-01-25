@@ -5,10 +5,9 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbEstimation */
 
-$this->title = 'Update Tb Estimation: ' . $model->id;
-$this->params['breadcrumbs'][] = ['label' => 'Tb Estimations', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
-$this->params['breadcrumbs'][] = 'Update';
+$this->title = 'Edit Estimasi : ' . $model->customer->name;
+$this->params['breadcrumbs'][] = ['label' => 'Estimasi', 'url' => ['index']];
+$this->params['breadcrumbs'][] = 'Edit';
 ?>
 <div class="card table-card">
     <div class="card-header">
@@ -25,11 +24,11 @@ $this->params['breadcrumbs'][] = 'Update';
     <div class="card-body">
         <div class="card-text">
 			<div class="tb-estimation-update">
-			    <?= $this->render('_form', [
-			        'model' => $model,
+                <?= $this->render('_form', [
+                    'model' => $model,
                     'serviceModel' => $serviceModel,
-                    // 'customerModel' => $customerModel,
-			    ]) ?>
+                    ])
+                ?>
 			</div>
 		</div>
 	</div>

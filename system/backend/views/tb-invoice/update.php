@@ -6,8 +6,7 @@ use yii\helpers\Html;
 /* @var $model backend\models\TbInvoice */
 
 $this->title = 'Edit Invoice: ' . $model->customer->name;
-$this->params['breadcrumbs'][] = ['label' => 'Data Invoices', 'url' => ['index']];
-// $this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
 $this->params['breadcrumbs'][] = 'Update';
 ?>
 <div class="card table-card">

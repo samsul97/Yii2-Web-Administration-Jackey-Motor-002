@@ -15,14 +15,14 @@ use Yii;
  * @property float $amount
  * @property string $timestamp
  */
-class TbService extends \yii\db\ActiveRecord
+class TbInvoiceService extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
-        return 'tb_service';
+        return 'tb_invoice_service';
     }
 
     /**
@@ -33,7 +33,7 @@ class TbService extends \yii\db\ActiveRecord
         return [
             [['name'], 'required'],
             [['name'], 'string'],
-            [['qty', 'id_tb_invoice', 'id_tb_estimation'], 'integer'],
+            [['qty', 'id_tb_invoice'], 'integer'],
             [['price'], 'number'],
             [['amount'], 'number'],
         ];
@@ -47,8 +47,6 @@ class TbService extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'id_tb_invoice' => 'Invoice',
-            'id_tb_estimation' => 'Invoice',
-            'id_tb_working_order' => 'Invoice',
             'name' => 'Service',
             'qty' => 'Qty',
             'price' => 'Harga',
@@ -56,15 +54,11 @@ class TbService extends \yii\db\ActiveRecord
             'timestamp' => 'Timestamp',
         ];
     }
+    
     public static function getCountOmset()
     {
-        $omset = TbService::find()->sum('amount');
+        $omset = TbInvoiceService::find()->sum('amount');
         return $omset;
-    }
-
-    public function getEstimation()
-    {
-        return $this->hasOne(TbEstimation::className(), ['id' => 'id_tb_estimation']);
     }
 
     public function getInvoice()

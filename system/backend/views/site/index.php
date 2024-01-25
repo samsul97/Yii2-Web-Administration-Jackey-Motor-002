@@ -15,7 +15,7 @@ use backend\models\TbEmployee;
 use backend\models\TbInventory;
 use backend\models\TbInvoice;
 use backend\models\TbMechanic;
-use backend\models\TbService;
+use backend\models\TbInvoiceService;
 use backend\models\User;
 use yii\helpers\Url;
 use yii\helpers\Html;
@@ -412,7 +412,7 @@ $level = Yii::$app->user->identity->level;
                 <div class="small-box bg-purple">
                     <div class="inner">
                         <p>Total Omset Keseluruhan</p>
-                        <h3><?=Yii::$app->formatter->asInteger(TbService::getCountOmset()); ?></h3>
+                        <h3><?=Yii::$app->formatter->asInteger(TbInvoiceService::getCountOmset()); ?></h3>
                     </div>
                     <div class="icon">
                         <i class="fa fa-envelope"></i>

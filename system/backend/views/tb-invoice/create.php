@@ -6,7 +6,7 @@ use yii\helpers\Html;
 /* @var $model backend\models\TbInvoice */
 
 $this->title = 'Tambah Invoice';
-$this->params['breadcrumbs'][] = ['label' => 'Tb Invoices', 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">

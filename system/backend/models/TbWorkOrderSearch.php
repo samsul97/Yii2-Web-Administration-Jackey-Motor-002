@@ -4,12 +4,12 @@ namespace backend\models;
 
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use backend\models\TbInvoice;
+use backend\models\TbWorkOrder;
 
 /**
- * TbInvoiceSearch represents the model behind the search form of `backend\models\TbInvoice`.
+ * TbWorkOrderSearch represents the model behind the search form of `backend\models\TbWorkOrder`.
  */
-class TbInvoiceSearch extends TbInvoice
+class TbWorkOrderSearch extends TbWorkOrder
 {
     /**
      * {@inheritdoc}
@@ -17,8 +17,8 @@ class TbInvoiceSearch extends TbInvoice
     public function rules()
     {
         return [
-            [['id', 'id_mechanic', 'id_customer', 'generate_status', 'is_out'], 'integer'],
-            [['broughtin', 'received', 'datein', 'dateout', 'timestamp', 'no_invoice'], 'safe'],
+            [['id', 'id_customer', 'id_mechanic', 'generate_status'], 'integer'],
+            [['broughtin', 'received', 'datein', 'dateout', 'timestamp'], 'safe'],
         ];
     }
 
@@ -40,7 +40,7 @@ class TbInvoiceSearch extends TbInvoice
      */
     public function search($params)
     {
-        $query = TbInvoice::find();
+        $query = TbWorkOrder::find();
 
         // add conditions that should always apply here
 
@@ -60,19 +60,17 @@ class TbInvoiceSearch extends TbInvoice
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'id_mechanic' => $this->id_mechanic,
             'id_customer' => $this->id_customer,
-            'generate_status' => $this->generate_status,
-            'is_out' => $this->is_out,
+            'id_mechanic' => $this->id_mechanic,
             'datein' => $this->datein,
             'dateout' => $this->dateout,
+            // 'is_invoice' => $this->is_invoice,
+            'generate_status' => $this->generate_status,
             'timestamp' => $this->timestamp,
         ]);
 
         $query->andFilterWhere(['like', 'broughtin', $this->broughtin])
-        ->andFilterWhere(['like', 'received', $this->received])
-        ->andFilterWhere(['like', 'no_invoice', $this->no_invoice]);
-            
+            ->andFilterWhere(['like', 'received', $this->received]);
 
         return $dataProvider;
     }

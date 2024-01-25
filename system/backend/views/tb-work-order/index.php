@@ -1,17 +1,17 @@
 <?php
 
+use backend\models\TbEstimation;
 use backend\models\TbInvoice;
-use backend\models\TbWorkOrder;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use kartik\export\ExportMenu;
 use yii\bootstrap4\Modal;
 
 /* @var $this yii\web\View */
-/* @var $searchModel backend\models\TbEstimationSearch */
+/* @var $searchModel backend\models\TbWorkOrderSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Daftar Estimasi';
+$this->title = 'Work Order';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="card table-card">
@@ -26,9 +26,9 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
     <div class="card-body">
         <div class="card-text">
-            <div class="tb-estimation-index">
+            <div class="tb-work-order-index">
             <p>
-                <?= Html::a('Tambah Estimasi', ['create'], ['class' => 'btn btn-success']) ?>
+                <?= Html::a('Tambah Work Order', ['create'], ['class' => 'btn btn-success']) ?>
             </p>
             <?php echo $this->render('_search', ['model' => $searchModel]); ?>
                 <div class="table-responsive table-nowrap">
@@ -45,19 +45,34 @@ $this->params['breadcrumbs'][] = $this->title;
                             'datein',
                             'dateout',
                             [
+                                'format' => 'raw',
+                                'attribute' => 'generate_status',
+                                'value' => function ($model) {
+                                    if ($model->generate_status == TbEstimation::FROM_ESTIMATION) {
+                                        return '<button class="btn btn-info disable">'. 'Estimation' .'</button>';
+                                    } else {
+                                        return '<button class="btn btn-warning disable">'. 'Work Order' .'</button>';
+                                    }
+                                },
+                                    'filter'=>[
+                                        1 => 'Estimation',
+                                        0 => 'Work Order',
+                                    ],
+                                ],
+                            [
                                 'class' => 'yii\grid\ActionColumn',
                                 'header' => 'Action',
-                                'template' => '{view} {update} {delete} {printestimation} {generate-work-order}',
+                                'template' => '{view} {update} {delete} {print-working-order} {generate-invoice}',
                                 'buttons' => [
                                     'view' => function($url, $model) {
                                         return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-search"></i></button>', 
                                             ['detail', 'id' => $model['id']], 
-                                            ['title' => 'View', 'class' => 'popupEstimation', 'data' => 
+                                            ['title' => 'View', 'class' => 'popupWorkOrder', 'data' => 
                                             ['pjax' => 1]
                                         ]);
                                     },
                                     'update' => function($url, $model) {
-                                        if ($model->is_work_order == TbWorkOrder::IS_NOT_WORK_ORDER) {
+                                        if ($model->is_invoice == TbInvoice::IS_NOT_INVOICE) {
                                             return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-edit"></i></button>', 
                                                 ['update', 'id' => $model['id']], 
                                                 ['title' => 'Update', 'data' => 
@@ -66,48 +81,39 @@ $this->params['breadcrumbs'][] = $this->title;
                                         }
                                     },
                                     'delete' => function($url, $model) {
-                                        if ($model->is_work_order == TbWorkOrder::IS_NOT_WORK_ORDER) {
+                                        if ($model->is_invoice == TbInvoice::IS_NOT_INVOICE) {
                                             return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>', 
                                                 ['delete', 'id' => $model['id']], 
-                                                ['title' => 'Delete', 'class' => '', 'data' => 
-                                                [
-                                                    'confirm' => 'Menghapus data ini menyebabkan WO dan Invoice yang terhubung juga ikut terhapus. Apakah Anda yakin ingin menghapus data ini?', 'method' => 'post', 'pjax' => 1],
+                                                ['title' => 'Delete', 'data' => 
+                                                ['confirm' => 'Apakah anda ingin menghapus data ?', 'method' => 'post', 'pjax' => 1],
                                             ]);
                                         }
                                     },
-                                    'printestimation' => function($url, $model) {
-                                        return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-money-check"></i></button>', 
-                                            ['print-estimation', 'id' => $model['id']], 
-                                            ['title' => 'Print Estimasi', 'data' => 
+                                    'print-working-order' => function($url, $model) {
+                                        return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-wrench"></i></button>', 
+                                            ['print-working-order', 'id' => $model['id']], 
+                                            ['title' => 'Cetak Working Order', 'data' => 
                                             ['pjax' => 1]
                                         ]);
                                     },
-                                    'generate-work-order' => function($url, $model) {
-                                        if ($model->is_invoice == TbInvoice::IS_INVOICE) { // jika invoice sudah dibuat
-                                            if ($model->workOrder->invoice !== null && $model->workOrder->invoice->is_out == TbInvoice::IS_OUT) { // namun statusnya sudah dibayar
+                                    'generate-invoice' => function($url, $model) {
+                                        if ($model->is_invoice == TbInvoice::IS_INVOICE) {
+                                            if ($model->invoice !== null && 
+                                                $model->invoice->is_out == TbInvoice::IS_OUT) {
                                                 return Html::a('<button class="btn btn-sm btn-success disabled"> Invoice sudah dibayar </button>');
-                                            } else { // jika belum dibayar
-                                                return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-arrow-right"></i> Wo & Invoice sudah dibuat </button>', 
-                                                    ['tb-invoice/view', 'id' => $model->workOrder->invoice->id], 
+                                            } else {
+                                                return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-arrow-right"></i> Invoice sudah dibuat</button>', 
+                                                    ['tb-invoice/view', 'id' => $model->invoice->id], 
                                                     ['title' => 'Check Invoice', 'data' => ['method' => 'post']]
                                                 );
                                             }
-                                        } else { // jika invoice belum dbuat
-                                            if ($model->is_work_order == TbWorkOrder::IS_WORK_ORDER && 
-                                                $model->is_invoice == TbInvoice::IS_NOT_INVOICE) { // jika work order sudah dibuat dan invoice belum dibuat
-                                                return Html::a('<button class="btn btn-sm btn-success"><i class="fa fa-arrow-right"></i> Work Order Berhasil Dibuat, Mau Lihat? </button>',
-                                                    ['view-work-order', 'id' => $model['id']],
-                                                    ['title' => 'Lihat Work Order']
-                                                );
-                                            } 
-                                            else { // jika tidak, maka buat work order terlebih dahulu
-                                                return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-arrow-right"></i> Buat Work Order </button>', 
-                                                    ['generate-work-order', 'id' => $model['id']], 
-                                                    ['title' => 'Generate Work Order', 'data' => 
-                                                        ['confirm' => 'Apakah Anda ingin buatkan Work Order dari Estimasi ini?', 'method' => 'post', 'pjax' => 1],
-                                                    ]
-                                                );
-                                            }
+                                        } else {
+                                            return Html::a('<button class="btn btn-sm btn-primary"><i class="fa fa-arrow-right"></i> Buat Invoice</button>', 
+                                                ['generate-invoice', 'id' => $model['id']],
+                                                ['title' => 'Generate Invoice', 'data' => 
+                                                    ['confirm' => 'Apakah Anda ingin membuat Invoice dari Work Order ini?', 'method' => 'post', 'pjax' => 1],
+                                                ]
+                                            );
                                         }
                                     },
                                 ]
@@ -117,7 +123,7 @@ $this->params['breadcrumbs'][] = $this->title;
                             'filterModel' => $searchModel,
                             'columns' => $gridColumns,
                             'dataProvider' => $dataProvider,
-                            'filename' => 'Data Invoice',
+                            'filename' => 'Data Work Order',
                         ]);
                     ?>
                     <?= GridView::widget([
@@ -131,14 +137,12 @@ $this->params['breadcrumbs'][] = $this->title;
     </div>
 </div>
 
-
 <?php
-// id dari button dilempar ke jquery dengan cara attr('href)
 $js = <<< JS
-$(".popupEstimation").on("click", function(e) {
+$(".popupWorkOrder").on("click", function(e) {
     e.preventDefault();
     url = $(this).attr('href');
-    $('#popupEstimation')
+    $('#popupWorkOrder')
         .modal('show')
         .find('.modal-body')
         .html('Loading ...')
@@ -147,23 +151,17 @@ $(".popupEstimation").on("click", function(e) {
 });
 JS;
 
-$css = <<< CSS
-CSS;
-
 $this->registerJs($js);
-$this->registerCss($css);
 
 Modal::begin([
-    'id' => 'popupEstimation',
+    'id' => 'popupWorkOrder',
     'size' => Modal::SIZE_LARGE,
-    'title' => 'Rincian Data Estimasi',
+    'title' => 'Work Order',
     'closeButton' => [
         'id'=>'close-button',
         'class'=>'close',
         'data-dismiss' =>'modal',
     ],
-    // keeps from closing modal with esc key or by clicking out of the modal.
-    // user must click cancel or X to close
     'clientOptions' => [
         'backdrop' => false, 'keyboard' => true
     ]
