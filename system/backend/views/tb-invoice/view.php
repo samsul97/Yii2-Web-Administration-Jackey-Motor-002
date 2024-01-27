@@ -35,7 +35,7 @@ $this->params['breadcrumbs'][] = ['label' => 'Invoice', 'url' => ['index']];
                         <?= Html::a('Delete Invoice', ['delete', 'id' => $model->id], [
                             'class' => 'btn btn-danger',
                             'data' => [
-                                'confirm' => 'Are you sure you want to delete this item?',
+                                'confirm' => 'Menghapus data ini menyebabkan service, work order, dan estimation yang terhubung juga ikut terhapus. Apakah Anda yakin ingin menghapus data ini?',
                                 'method' => 'post',
                             ],
                         ]) ?>

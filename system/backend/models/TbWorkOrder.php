@@ -65,6 +65,23 @@ class TbWorkOrder extends \yii\db\ActiveRecord
         ];
     }
 
+    public function beforeDelete()
+    {
+        if (parent::beforeDelete()) {
+            if ($this->estimation) {
+                $this->estimation->delete();
+            }
+
+            foreach ($this->serviceItems as $item) {
+                $item->delete();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function getCustomer()
     {
         return $this->hasOne(TbCustomer::className(), ['id' => 'id_customer']);
@@ -99,6 +116,7 @@ class TbWorkOrder extends \yii\db\ActiveRecord
     {
         return $this->hasMany(TbWorkOrderService::className(), ['id_tb_work_order' => 'id']);
     }
+
     public function getInvoice()
     {
         return $this->hasOne(TbInvoice::className(), ['id_work_order' => 'id']);

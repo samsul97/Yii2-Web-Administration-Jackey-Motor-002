@@ -67,6 +67,19 @@ class TbEstimation extends \yii\db\ActiveRecord
             'timestamp' => 'Tgl Estimasi',
         ];
     }
+
+    public function beforeDelete()
+    {
+        if (parent::beforeDelete()) {
+            foreach ($this->serviceItems as $item) {
+                $item->delete();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
     
     public function getServiceItems()
     {
