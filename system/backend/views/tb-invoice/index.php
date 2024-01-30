@@ -40,6 +40,13 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'headerOptions' => ['style' => 'text-align:center'],
                                 'contentOptions' => ['style' => 'text-align:center']
                             ],
+                            [
+                                'attribute' => 'id_customer',
+                                'format' => 'raw',
+                                'value' => function ($model) {
+                                    return $model->customer->name . '-' . $model->customer->plate;
+                                },
+                            ],
                             'received',
                             'broughtin',
                             'datein',

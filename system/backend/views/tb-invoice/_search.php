@@ -9,6 +9,11 @@ use yii\widgets\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbInvoiceSearch */
 /* @var $form yii\widgets\ActiveForm */
+
+$customer = ArrayHelper::map(TbCustomer::find()->joinWith('invoice')->all(), 'id', function($model) {
+    return $model->name . ' - ' . $model->plate;
+});
+
 ?>
 
 <div class="tb-invoice-search">
@@ -21,7 +26,7 @@ use yii\widgets\ActiveForm;
     <div class="row">
         <div class="col-lg-6">
             <?= $form->field($model, 'id_customer')->widget(Select2::classname(),[
-                    'data' => ArrayHelper::map(TbCustomer::find()->joinWith('tbWorkOrder')->all(), 'id', 'plate'),
+                    'data' => $customer,
                     'options' => [
                         'placeholder' => 'Cari Berdasarkan No Plat',
                     ],

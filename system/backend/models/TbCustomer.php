@@ -67,8 +67,13 @@ class TbCustomer extends \yii\db\ActiveRecord
         return $this->hasMany(TbEstimation::class, ['id_customer' => 'id']);
     }
 
-    public function getTbWorkOrder()
+    public function getWorkOrder()
     {
         return $this->hasMany(TbWorkOrder::class, ['id_customer' => 'id']);
+    }
+    
+    public function getInvoice()
+    {
+        return $this->hasMany(TbInvoice::class, ['id_customer' => 'id']);
     }
 }

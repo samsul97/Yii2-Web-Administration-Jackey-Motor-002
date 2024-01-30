@@ -10,6 +10,9 @@ use yii\widgets\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $model backend\models\TbWorkOrderSearch */
 /* @var $form yii\widgets\ActiveForm */
+$customer = ArrayHelper::map(TbCustomer::find()->joinWith('workOrder')->all(), 'id', function($model) {
+    return $model->name . ' - ' . $model->plate;
+});
 ?>
 
 <div class="tb-work-order-search">
@@ -22,7 +25,7 @@ use yii\widgets\ActiveForm;
     <div class="row">
         <div class="col-md-4">
             <?= $form->field($model, 'id_customer')->widget(Select2::classname(),[
-                    'data' => ArrayHelper::map(TbCustomer::find()->joinWith('tbWorkOrder')->all(), 'id', 'plate'),
+                    'data' => $customer,
                     'options' => [
                         'placeholder' => 'Cari Berdasarkan No Plat',
                     ],
