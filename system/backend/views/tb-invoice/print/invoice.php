@@ -33,7 +33,7 @@ use yii\helpers\Url;
                                 <th>Date In: <?= $model->datein ?></th>                  
                                 <th>Model: <?= $model->customer ? $model->customer->model : null ?></th>
                                 <th>Reg Date: <?= $model->customer ? $model->customer->regdate : null ?></th>                           
-                                <th class="text-center" rowspan="3"><h3><strong>INVOICE</strong></h3></th>
+                                <th class="text-center" rowspan="2"><h3><strong>INVOICE</strong></h3></th>
                             </tr>
                             <tr>
                                 <td>Car ID: <?= $model->customer? $model->customer->plate : null ?></td>
@@ -45,6 +45,7 @@ use yii\helpers\Url;
                                 <td>Brought in: <?= $model->broughtin ?></td>
                                 <td>Received: <?= $model->received ?></td>
                                 <td>Engine: <?= $model->customer ? $model->customer->engine : null ?></td>
+                                <td>Merk : <?= $model->customer ? $model->customer->merk : null ?> </td>
                                 <td>Mechanic : <?= $model->mechanic ? $model->mechanic->name : null ?> </td>
                             </tr>
                         </table>
