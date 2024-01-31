@@ -45,8 +45,7 @@ use yii\helpers\Url;
                                 <td>Brought in: <?= $model->broughtin ?></td>
                                 <td>Received: <?= $model->received ?></td>
                                 <td>Engine: <?= $model->customer ? $model->customer->engine : null ?></td>
-                                <td>Merk : <?= $model->customer ? $model->customer->merk : null ?> </td>
-                                <td>Mechanic : <?= $model->mechanic ? $model->mechanic->name : null ?> </td>
+                                <td colspan="2">Mechanic : <?= $model->mechanic ? $model->mechanic->name : null ?> </td>
                             </tr>
                         </table>
                     </div>
