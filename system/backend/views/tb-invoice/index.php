@@ -28,7 +28,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="card-text">
             <div class="tb-invoice-index">
             <p>
-                <?= Html::a('Tambah Invoice', ['create'], ['class' => 'btn btn-success']) ?>
+                <?php // Html::a('Tambah Invoice', ['create'], ['class' => 'btn btn-success']) ?>
             </p>
                 <?php echo $this->render('_search', ['model' => $searchModel]); ?>
                 <div class="table-responsive table-nowrap">
