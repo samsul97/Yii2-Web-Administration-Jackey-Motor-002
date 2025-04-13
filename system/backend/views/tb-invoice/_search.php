@@ -26,7 +26,7 @@ $data = ArrayHelper::map(TbCustomer::find()
     ]); ?>
 
     <div class="row">
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <?= $form->field($model, 'id_customer')->widget(Select2::classname(),[
                     'data' => $data,
                     'options' => [
@@ -38,11 +38,8 @@ $data = ArrayHelper::map(TbCustomer::find()
                 ]);
             ?>
         </div>
-        <div class="col-lg-4">
+        <div class="col-lg-6">
             <?= $form->field($model, 'no_invoice')->textInput(['placeholder' => 'Cari Berdasarkan No Order Invoice']) ?>
-        </div>
-        <div class="col-lg-4">
-            <?= $form->field($model, 'id_customer')->textInput(['placeholder' => 'Cari Berdasarkan No Order Invoice']) ?>
         </div>
     </div>
 
