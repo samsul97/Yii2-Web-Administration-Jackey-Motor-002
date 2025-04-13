@@ -92,7 +92,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                             return Html::a('<button class="btn btn-sm btn-danger"><i class="fa fa-trash"></i></button>', 
                                                 ['delete', 'id' => $model['id']], 
                                                 ['title' => 'Delete', 'data' => 
-                                                ['confirm' => 'Apakah anda ingin menghapus data ?', 'method' => 'post', 'pjax' => 1],
+                                                ['confirm' => 'Menghapus data ini menyebabkan service, estimasi yang terhubung juga ikut terhapus. Apakah Anda yakin ingin menghapus data ini?', 'method' => 'post', 'pjax' => 1],
                                             ]);
                                         }
                                     },

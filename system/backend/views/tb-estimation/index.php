@@ -78,7 +78,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                                 ['delete', 'id' => $model['id']], 
                                                 ['title' => 'Delete', 'class' => '', 'data' => 
                                                 [
-                                                    'confirm' => 'Menghapus data ini menyebabkan WO dan Invoice yang terhubung juga ikut terhapus. Apakah Anda yakin ingin menghapus data ini?', 'method' => 'post', 'pjax' => 1],
+                                                    'confirm' => 'Menghapus data ini menyebabkan service juga ikut terhapus. Apakah Anda yakin ingin menghapus data ini?', 'method' => 'post', 'pjax' => 1],
                                             ]);
                                         }
                                     },

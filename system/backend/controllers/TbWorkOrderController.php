@@ -9,7 +9,6 @@ use backend\models\TbCustomer;
 use backend\models\TbEstimation;
 use backend\models\TbInvoice;
 use backend\models\TbInvoiceService;
-use backend\models\TbMechanic;
 use backend\models\TbWorkOrderService;
 use backend\models\TbWorkOrderSearch;
 use kartik\mpdf\Pdf;

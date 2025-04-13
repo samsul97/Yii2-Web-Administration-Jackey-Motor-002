@@ -77,6 +77,23 @@ class TbInvoice extends \yii\db\ActiveRecord
         ];
     }
 
+    public function beforeDelete()
+    {
+        if (parent::beforeDelete()) {
+            if ($this->workOrder) {
+                $this->workOrder->delete();
+            }
+
+            foreach ($this->serviceItems as $item) {
+                $item->delete();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public function getServiceItems()
     {
         return $this->hasMany(TbInvoiceService::className(), ['id_tb_invoice' => 'id']);
