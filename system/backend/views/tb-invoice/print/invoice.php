@@ -32,21 +32,20 @@ use yii\helpers\Url;
                                 <th>Invoice ID:<br><?= $model->no_invoice ?></br></th>
                                 <th>Date In: <?= $model->datein ?></th>                  
                                 <th>Model: <?= $model->customer ? $model->customer->model : null ?></th>
-                                <th class="text-center" rowspan="2"><h3><strong>INVOICE</strong></h3></th>
-                                <th>Mechanic : <?= $model->mechanic->name ?> </th>                                
+                                <td>KM: <?= $model->customer ? $model->customer->km : null ?></td>                              
+                                <th rowspan="2" class="text-center"><h3><strong>INVOICE</strong></h3></th>
                             </tr>
                             <tr>
                                 <td>Car ID: <?= $model->customer? $model->customer->plate : null ?></td>
                                 <td>Date Out: <?= $model->dateout ?></td>
                                 <td>Chasis: <?= $model->customer ? $model->customer->chasis : null ?></td>
-                                <td>KM: <?= $model->customer ? $model->customer->km : null ?></td>
-                                
+                                <td>Reg Date: <?= $model->customer ? $model->customer->regdate : null ?></td>
                             </tr>
                             <tr>
                                 <td>Brought in: <?= $model->broughtin ?></td>
                                 <td>Received: <?= $model->received ?></td>
                                 <td>Engine: <?= $model->customer ? $model->customer->engine : null ?></td>
-                                <td colspan="2">Reg Date: <?= $model->customer ? $model->customer->regdate : null ?></td>
+                                <td colspan="2">Mechanic : <?= $model->mechanic->name ?> </th>
                             </tr>
                         </table>
                     </div>
